@@ -1639,9 +1639,29 @@ COMMAND(setadmin, "is");
 static vector<mline> mlines;
 
 void *kickmenu = NULL, *banmenu = NULL, *forceteammenu = NULL, *giveadminmenu = NULL;
+int oldcn_k = -1, oldcn_b = -1, oldcn_f = -1, oldcn_g = -1;
 
 void refreshsopmenu(void *menu, bool init)
 {
+    if (!menu) return;
+    gmenu &mu = *(gmenu *)menu;
+    playerent *oldsel = NULL;
+    int *oldcn = (menu==kickmenu ? &oldcn_k : (menu==banmenu ? &oldcn_b : (menu==forceteammenu ? &oldcn_f : &oldcn_g)));
+    int oldlength = mu.items.length(), position = -1;
+
+    loopv(players) if(players[i])
+    {
+        position++;
+        if (position == mu.menusel)
+        {
+            //when player with lower cn disconnected, then there is selected position with ...
+            //... the same number, but already with other player - therefore here is oldcn
+            i == *oldcn ? oldsel = players[i] : oldsel = players[*oldcn];
+            *oldcn = i;
+            break;
+        }
+    }
+
     menureset(menu);
     mlines.shrink(0);
     mlines.reserve(players.length());
@@ -1654,6 +1674,21 @@ void refreshsopmenu(void *menu, bool init)
         formatstring(m.cmd)("%s %d%s", menu==kickmenu ? "kick" : (menu==banmenu ? "ban" : (menu==forceteammenu ? "forceteam" : "giveadmin")), i, (menu==kickmenu||menu==banmenu)?(strlen(kbr)>8?kbr:" NONE"):""); // 8==3 + "format-extra-chars"
         menuitemmanual(menu, m.name, m.cmd);
     }
+
+     if(mu.items.length() > 1 && oldlength != mu.items.length())
+     {
+         position = -1;
+         loopv(players) if(players[i])
+         {
+             position++;
+             //oldsel doesn't work, when "mu.menusel >= mu.items.length()"
+             if(oldsel == players[i] || (mu.menusel >= mu.items.length() && players[*oldcn] == players[i]))
+             {
+                 mu.menusel = position;
+                 break;
+             }
+         }
+     }
 }
 
 extern bool watchingdemo;
