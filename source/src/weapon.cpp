@@ -1053,6 +1053,8 @@ int grenades::flashtime() const { return 0; }
 
 bool grenades::busy() { return state!=GST_NONE; }
 
+int akimbowastaken = 0;
+
 bool grenades::attack(vec &targ)
 {
     int attackmillis = lastmillis-owner->lastaction;
@@ -1068,6 +1070,7 @@ bool grenades::attack(vec &targ)
             {
                 attackevent(owner, type);
                 activatenade(to); // activate
+                int akimbowastaken = 0;
             }
         break;
 
@@ -1083,7 +1086,12 @@ bool grenades::attack(vec &targ)
             if(attackmillis >= throwwait) // throw done
             {
                 reset();
-                if(!mag && this==owner->weaponsel) // switch to primary immediately
+                if (akimboautoswitch && owner->akimbo && !akimbowastaken) // switch to akimbo immediately
+                {
+                    owner->weaponchanging = lastmillis-1-(weaponchangetime/2);
+                    owner->nextweaponsel = owner->weaponsel = owner->weapons[GUN_AKIMBO];
+                }
+                else if(!mag && this==owner->weaponsel) // switch to primary immediately
                 {
                     owner->weaponchanging = lastmillis-1-(weaponchangetime/2);
                     owner->nextweaponsel = owner->weaponsel = owner->primweap;
@@ -1508,8 +1516,7 @@ void akimbo::onammopicked()
     akimbomillis = lastmillis + 30000;
     if(owner==player1)
     {
-        // if(owner->weaponsel->type!=GUN_SNIPER && owner->weaponsel->type!=GUN_GRENADE) owner->weaponswitch(this);
-        if(akimboautoswitch || owner->weaponsel->type==GUN_PISTOL) owner->weaponswitch(this); // Give the client full control over akimbo auto-switching // Bukz 2011apr23
+        if((akimboautoswitch && (owner->weaponsel->type!=GUN_GRENADE || (owner->weaponsel->type==GUN_GRENADE && !owner->attacking))) || (owner->weaponsel->type==GUN_PISTOL && !owner->weaponchanging) || (owner->weaponchanging && owner->nextweaponsel->type==GUN_PISTOL)) owner->weaponswitch(this);
         addmsg(SV_AKIMBO, "ri", lastmillis);
     }
 }
