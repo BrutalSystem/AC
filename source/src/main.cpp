@@ -1192,6 +1192,7 @@ int main(int argc, char **argv)
 
     initlog("cfg");
     extern void *scoremenu, *servmenu, *searchmenu, *serverinfomenu, *kickmenu, *banmenu, *forceteammenu, *giveadminmenu, *docmenu, *applymenu, *downloaddemomenu;
+    extern void *ignoremenu;
     scoremenu = addmenu("score", "columns", false, renderscores, NULL, false, true);
     servmenu = addmenu("server", NULL, true, refreshservers, serverskey);
     searchmenu = addmenu("search", NULL, true, refreshservers, serverskey);
@@ -1203,6 +1204,7 @@ int main(int argc, char **argv)
     docmenu = addmenu("reference", NULL, true, renderdocmenu);
     applymenu = addmenu("apply", "apply changes now?", true, refreshapplymenu);
     downloaddemomenu = addmenu("Download demo", NULL, true);
+    ignoremenu = addmenu("ignore player", NULL, true, refreshsopmenu);
 
     exec("config/scontext.cfg");
     exec("config/keymap.cfg");
