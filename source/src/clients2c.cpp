@@ -1177,7 +1177,11 @@ void parsemessages(int cn, playerent *d, ucharbuf &p, bool demo = false)
                             if(you && !team_isspect(d->team) && team_isspect(fnt) && d->state == CS_DEAD) spectatemode(SM_FLY);
                         }
                     }
-                    else if(d->team != fnt && ftr == FTR_PLAYERWISH && !team_isactive(d->team)) conoutf("%s changed to active play", you ? "you" : colorname(d));
+                    else if(d->team != fnt && ftr == FTR_PLAYERWISH)
+                    {
+                        if(!team_isactive(d->team)) conoutf("%s changed to active play", you ? "you" : colorname(d));
+                        else if(you && !team_isspect(fnt)) conoutf("you're wearing now %s colors", nts);
+                    }
                     d->team = fnt;
                     if(team_isspect(d->team)) d->state = CS_SPECTATE;
                 }

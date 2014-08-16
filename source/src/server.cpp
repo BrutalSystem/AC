@@ -1643,7 +1643,6 @@ bool updateclientteam(int cln, int newteam, int ftr)
         }
         if(team_isactive(newteam))
         {
-            if(!m_teammode && cl.state.state == CS_ALIVE) return false;  // no comments
             if(mastermode == MM_MATCH)
             {
                 if(m_teammode && matchteamsize && teamsizes[newteam] >= matchteamsize) return false;  // ensure maximum team size
