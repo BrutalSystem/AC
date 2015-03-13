@@ -165,7 +165,9 @@ keym *findbind(const char *key)
 
 keym *findbinda(const char *action, int type)
 {
-    loopv(keyms) if(!strcasecmp(keyms[i].actions[type], action)) return &keyms[i];
+    defformatstring(actionspaces)(" %s ", action);
+    loopv(keyms)
+        if(!strcasecmp(keyms[i].actions[type], action) || !strcasecmp(keyms[i].actions[type], actionspaces)) return &keyms[i];
     return NULL;
 }
 
