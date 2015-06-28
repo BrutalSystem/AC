@@ -1652,7 +1652,14 @@ playerent *updatefollowplayer(int shiftdirection)
         if((players[i]->state == CS_DEAD || players[i]->isspectating()) && (!stayondeadplayers || players[i] != f)) continue; // don't spect dead players, but in some cases stay on them
         available.add(players[i]);
     }
-    if(available.length() < 1) return NULL;
+    if(available.length() < 1)
+    {
+        if(f && !stayondeadplayers) loopv(players)
+        {
+            if(players[i] == f && f->state == CS_DEAD) return f;
+        }
+        return NULL;
+    }
 
     // rotate
     int oldidx = f ? available.find(f) : 0;
