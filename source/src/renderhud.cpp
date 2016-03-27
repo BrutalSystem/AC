@@ -378,6 +378,8 @@ struct hudline : cline
     hudline() : type(HUDMSG_INFO) {}
 };
 
+VARP(hudechosize, 5, 9, 12);
+
 struct hudmessages : consolebuffer<hudline>
 {
     hudmessages() : consolebuffer<hudline>(20) {}
@@ -407,13 +409,14 @@ struct hudmessages : consolebuffer<hudline>
         if(!conlines.length()) return;
         glPushMatrix();
         glLoadIdentity();
-        glOrtho(0, VIRTW*0.9f, VIRTH*0.9f, 0, -1, 1);
+        float hvw = VIRTW * (18.0f - hudechosize) / 10.0f, hvh = VIRTH * (18.0f - hudechosize) / 10.0f;
+        glOrtho(0, hvw, hvh, 0, -1, 1);
         int dispmillis = arenaintermission ? 6000 : 3000;
         loopi(min(conlines.length(), 3)) if(totalmillis-conlines[i].millis<dispmillis)
         {
             cline &c = conlines[i];
             int tw = text_width(c.line);
-            draw_text(c.line, int(tw > VIRTW*0.9f ? 0 : (VIRTW*0.9f-tw)/2), int(((VIRTH*0.9f)/4*3)+FONTH*i+pow((totalmillis-c.millis)/(float)dispmillis, 4)*VIRTH*0.9f/4.0f));
+            draw_text(c.line, int(tw > hvw ? HUDPOS_HEALTH*2 : (hvw-tw)/2), int((hvh/4*3)+FONTH*i+pow((totalmillis-c.millis)/(float)dispmillis, 4)*hvh/4.0f), 255, 255, 255, 255, -1, hvw-HUDPOS_HEALTH*2);
         }
         glPopMatrix();
     }
