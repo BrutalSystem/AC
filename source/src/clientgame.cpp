@@ -1031,6 +1031,8 @@ void silenttimeupdate(int milliscur, int millismax)
     minutesremaining = (gametimemaximum - gametimecurrent + 60000 - 1) / 60000;
 }
 
+bool intermissionscores = false;
+
 void timeupdate(int milliscur, int millismax)
 {
     static int lastgametimedisplay = 0;
@@ -1042,6 +1044,7 @@ void timeupdate(int milliscur, int millismax)
 
     if(!minutesremaining)
     {
+        if(!intermission) intermissionscores = true;
         intermission = true;
         extern bool needsautoscreenshot;
         if(autoscreenshot) needsautoscreenshot = true;
@@ -1224,6 +1227,7 @@ void startmap(const char *name, bool reset, bool norespawn)   // called just aft
     loopv(players) if(players[i]) players[i]->frags = players[i]->flagscore = players[i]->deaths = players[i]->lifesequence = players[i]->points = players[i]->tks = 0;
     if(editmode) toggleedit(true);
     intermission = false;
+    intermissionscores = false;
     showscores(false);
     closemenu("Download demo");    // close and reset demo list, because it may be no longer accurate, since a new game has started
     extern void *downloaddemomenu;

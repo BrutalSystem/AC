@@ -297,6 +297,8 @@ void reorderscorecolumns()
     menutitlemanual(scoremenu, scoreboardtitle);
 }
 
+int winner = -1;
+
 void renderscores(void *menu, bool init)
 {
     if(needscoresreorder) reorderscorecolumns();
@@ -317,7 +319,7 @@ void renderscores(void *menu, bool init)
     loopv(scores) if(scores[i]->team == TEAM_SPECT) spectators++;
     loopv(discscores) if(discscores[i].team == TEAM_SPECT) spectators++;
 
-    int winner = -1;
+    if(!intermission || intermissionscores) winner = -1;
     if(m_teammode)
     {
         teamscore teamscores[2] = { teamscore(TEAM_CLA), teamscore(TEAM_RVSF) };
@@ -331,7 +333,7 @@ void renderscores(void *menu, bool init)
             renderteamscore(&teamscores[sort ^ i]);
             renderdiscscores(sort ^ i);
         }
-        winner = m_flags ?
+        if(!intermission || intermissionscores) winner = m_flags ?
             (teamscores[sort].flagscore > teamscores[team_opposite(sort)].flagscore ? sort : -1) :
             (teamscores[sort].frags > teamscores[team_opposite(sort)].frags ? sort : -1);
 
@@ -342,11 +344,11 @@ void renderscores(void *menu, bool init)
         loopi(2) renderdiscscores(i);
         if(scores.length() > 0)
         {
-            winner = scores[0]->clientnum;
+            if(!intermission || intermissionscores) winner = scores[0]->clientnum;
             if(scores.length() > 1
                 && ((m_flags && scores[0]->flagscore == scores[1]->flagscore)
                      || (!m_flags && scores[0]->frags == scores[1]->frags)))
-                winner = -1;
+                if(!intermission || intermissionscores) winner = -1;
         }
     }
     if(spectators)
@@ -366,6 +368,7 @@ void renderscores(void *menu, bool init)
         formatstring(modeline)("\"%s\" on map %s", modestr(gamemode, modeacronyms > 0), fldrprefix ? getclientmap()+strlen("maps/") : getclientmap());
     }
 
+    if(intermissionscores) intermissionscores = false;
     extern int minutesremaining, gametimedisplay;
     extern string gtime;
 

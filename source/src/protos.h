@@ -1064,6 +1064,7 @@ extern char *filtertext(char *dst, const char *src, int flags, int len = sizeof(
 extern void filterrichtext(char *dst, const char *src, int len = sizeof(string)-1);
 extern void filterlang(char *d, const char *s);
 extern void trimtrailingwhitespace(char *s);
+extern bool intermissionscores;
 extern string mastername;
 extern int masterport;
 extern ENetSocket connectmaster();
