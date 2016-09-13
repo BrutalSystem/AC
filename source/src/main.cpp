@@ -437,6 +437,25 @@ VARNFP(gamma, vgamma, 30, 100, 300,
     if(SDL_SetGamma(f,f,f)==-1) conoutf("Could not set gamma: %s", SDL_GetError());
 });
 
+VARFP(gammaramp, 30, 100, 300,
+{
+    static int curgammaramp = 100;
+    static Uint16 ramp[256];
+
+    if(gammaramp != curgammaramp)
+    {
+        double g = 100.0f / double(gammaramp);
+        loopi(256)
+        {
+            int val = (int)(pow((double)i/256.0, g) * 65535.0 + 0.5);
+            if(val > 65535) val = 65535;
+            ramp[i] = (Uint16)val;
+        }
+        curgammaramp = gammaramp;
+        if(SDL_SetGammaRamp(ramp, ramp, ramp) == -1) conoutf("Could not set gamma ramp: %s", SDL_GetError());
+    }
+});
+
 void cleargamma()
 {
     if(curgamma != 100) SDL_SetGamma(1, 1, 1);
