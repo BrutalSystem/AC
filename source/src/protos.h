@@ -398,6 +398,8 @@ extern void renderaboveheadicon(playerent *p);
 extern void drawscope(bool preload = false);
 extern float dynfov();
 extern void damageblend(int n);
+extern int damageblendmillis;
+extern int damagedirections[8];
 
 // shadow
 extern bool addshadowbox(const vec &bbmin, const vec &bbmax, const vec &extrude, const glmatrixf &mat);

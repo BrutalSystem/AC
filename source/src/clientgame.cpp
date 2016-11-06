@@ -383,11 +383,17 @@ void deathstate(playerent *pl)
         setscope(false);
         setburst(false);
         if(editmode) toggleedit(true);
-        damageblend(-1);
         if(pl->team == TEAM_SPECT) spectatemode(SM_FLY);
         else if(team_isspect(pl->team)) spectatemode(SM_FOLLOW1ST);
     }
     else pl->resetinterp();
+
+    if(pl == player1 || (player1->isspectating() && player1->followplayercn == pl->clientnum))
+    {
+        int t = 2000;
+        damageblendmillis = damageblendmillis - lastmillis > t ? lastmillis + t : damageblendmillis;
+        loopi(8) damagedirections[i] = damagedirections[i] - lastmillis > t ? lastmillis + t : damagedirections[i];
+    }
 }
 
 void spawnstate(playerent *d)              // reset player state not persistent accross spawns
