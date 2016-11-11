@@ -964,7 +964,8 @@ void entinmap(physent *d)    // brute force but effective way to find a free spa
             d->resetinterp();
             return;
         }
-        d->o = orig;
+        d->o.x = orig.x;
+        d->o.y = orig.y;
     }
     // leave ent at original pos, possibly stuck
     d->resetinterp();
