@@ -710,7 +710,7 @@ void parsemessages(int cn, playerent *d, ucharbuf &p, bool demo = false)
                 {
                     s->lastattackweapon = s->weapons[gun];
                     s->weapons[gun]->gunwait = s->weapons[gun]->info.attackdelay;
-                    s->weapons[gun]->attackfx(from, to, -1);
+                    s->weapons[gun]->attackfx(from, to, 0);
                     s->weapons[gun]->reloading = 0;
                 }
                 s->pstatshots[gun]++; //NEW
