@@ -77,6 +77,7 @@ void drawvoteicon(float x, float y, int col, int row, bool noblend)
 
 VARP(crosshairsize, 0, 15, 50);
 VARP(showstats, 0, 1, 2);
+VARP(showplayersnumber, 0, 0, 2);
 VARP(crosshairfx, 0, 1, 3);
 VARP(crosshairteamsign, 0, 1, 1);
 VARP(hideradar, 0, 0, 1);
@@ -85,7 +86,7 @@ VARP(hideteam, 0, 0, 1);
 VARP(hideteamscorehud, 0, 0, 1);
 VARP(flagscorehudtransparency, 0, 2, 2);
 VARP(hideeditinfopanel, 0, 0, 1);
-VARP(hidevote, 0, 0, 2);
+VARP(hidevote, 0, 1, 2);
 VARP(hidehudmsgs, 0, 0, 1);
 VARP(hidehudequipment, 0, 0, 1);
 VARP(hideconsole, 0, 0, 1);
@@ -965,36 +966,41 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
     {
         extern votedisplayinfo *curvote;
 
-        if(curvote && curvote->millis >= totalmillis && !(hidevote == 1 && curvote->localplayervoted && curvote->result == VOTE_NEUTRAL))
+        if(curvote && curvote->millis >= totalmillis)
         {
-            const int left = 2 * HUDPOS_X_BOTTOMLEFT, top = VIRTH;
-            defformatstring(str)("%s called a vote:", curvote->owner ? colorname(curvote->owner) : "");
-            draw_text(str, left, top + 240, 255, 255, 255, votealpha);
-            draw_text(curvote->desc, left, top + 320, 255, 255, 255, votealpha);
-            draw_text("----", left, top + 400, 255, 255, 255, votealpha);
-            formatstring(str)("%d yes vs. %d no", curvote->stats[VOTE_YES], curvote->stats[VOTE_NO]);
-            draw_text(str, left, top + 480, 255, 255, 255, votealpha);
-
-            switch(curvote->result)
+            if(!(hidevote == 1 && curvote->localplayervoted && curvote->result == VOTE_NEUTRAL))
             {
-                case VOTE_NEUTRAL:
-                    drawvoteicon(left, top, 0, 0, false);
-                    if(!curvote->localplayervoted)
-                        draw_text("\f3press F1/F2 to vote yes or no", left, top+560, 255, 255, 255, votealpha);
-                    break;
-                default:
-                    drawvoteicon(left, top, (curvote->result-1)&1, 1, false);
-                    formatstring(str)("\f3vote %s", curvote->result == VOTE_YES ? "PASSED" : "FAILED");
-                    draw_text(str, left, top + 560, 255, 255, 255, votealpha);
-                    break;
+                const int left = 20*2, top = VIRTH;
+                defformatstring(str)("%s called a vote:", curvote->owner ? colorname(curvote->owner) : "");
+                draw_text(str, left, top + 240, 255, 255, 255, votealpha);
+                draw_text(curvote->desc, left, top + 320, 255, 255, 255, votealpha);
+                draw_text("----", left, top + 400, 255, 255, 255, votealpha);
+                formatstring(str)("%d yes vs. %d no", curvote->stats[VOTE_YES], curvote->stats[VOTE_NO]);
+                draw_text(str, left, top + 480, 255, 255, 255, votealpha);
+
+                switch(curvote->result)
+                {
+                    case VOTE_NEUTRAL:
+                        drawvoteicon(left, top, 0, 0, false);
+                        if(!curvote->localplayervoted)
+                            draw_text("\f3press F1/F2 to vote yes or no", left, top+560, 255, 255, 255, votealpha);
+                        break;
+                    default:
+                        drawvoteicon(left, top, (curvote->result-1)&1, 1, false);
+                        formatstring(str)("\f3vote %s", curvote->result == VOTE_YES ? "PASSED" : "FAILED");
+                        draw_text(str, left, top + 560, 255, 255, 255, votealpha);
+                        break;
+                }
             }
+            defformatstring(str)("%s %d:%d %s ", curvote->result == VOTE_YES ? "YES" : "yes", curvote->stats[VOTE_YES], curvote->stats[VOTE_NO], curvote->result == VOTE_NO ? "NO" : "no");
+            draw_text(str, (VIRTW-225-10)*2 - (text_width(str)/2 + FONTH/2), 900);
         }
     }
     //else draw_textf("%c%d here F1/F2 will be praised during a vote", 20*2, VIRTH+560, '\f', 0); // see position (left/top) setting in block above
 
     if(showplayersnumber && multiplayer(NULL) && !intermission)
     {
-        int ptop = 900 + 3*FONTH/2;
+        int ptop = 900 + 4*FONTH/2;
         if(m_teammode && (m_arena || showplayersnumber == 2))
         {
             int totalteamsize[2] = {0, 0}, aliveteamsize[2] = {0, 0};

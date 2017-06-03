@@ -1580,7 +1580,8 @@ void voteresult(int v)
     {
         curvote->result = v;
         curvote->millis = totalmillis + 5000;
-        conoutf("vote %s", v == VOTE_YES ? "passed" : "failed");
+        if(!curvote->stats[VOTE_YES]) conoutf("vote %s", v == VOTE_YES ? "passed" : "failed"); // when player, which started a vote, disconnected
+        else conoutf("vote %s: %d yes vs. %d no", v == VOTE_YES ? "passed" : "failed", curvote->stats[VOTE_YES], curvote->stats[VOTE_NO]);
         if(multiplayer(NULL)) audiomgr.playsound(v == VOTE_YES ? S_VOTEPASS : S_VOTEFAIL, SP_HIGH);
         exechook(HOOK_SP_MP, "onVoteEnd", "");
         votepending = 0;
