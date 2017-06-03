@@ -643,7 +643,7 @@ VARP(serversortdir, 0, 0, 1);
 VARP(showonlygoodservers, 0, 0, 1);
 VAR(shownamesinbrowser, 0, 0, 1);
 VARP(showminremain, 0, 1, 1);
-VARP(showallplayersnumber, 0, 1, 1);
+VARP(showallplayersnumberinbrowser, 0, 1, 1);
 VARP(serversortpreferofficial, 0, 1, 1);
 
 void serversortprepare()
@@ -1148,7 +1148,7 @@ void refreshservers(void *menu, bool init)
             "%sping\t%s plr\tserver (\fs\f0description\fr)%s%s"                  // 7: description
         };
         defformatstring(allplrs)("%d", allplayers);
-        formatstring(title)(titles[serversort], showfavtag ? "fav\t" : "", !issearch && showallplayersnumber ? allplrs : "", issearch ? "      search results for \f3" : "     (F1: Help/Settings)", issearch ? cursearch : "");
+        formatstring(title)(titles[serversort], showfavtag ? "fav\t" : "", !issearch && showallplayersnumberinbrowser ? allplrs : "", issearch ? "      search results for \f3" : "     (F1: Help/Settings)", issearch ? cursearch : "");
         menutitlemanual(menu, title);
 
         static string notfoundmsg, headermsg;

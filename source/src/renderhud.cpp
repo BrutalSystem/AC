@@ -992,6 +992,52 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
     }
     //else draw_textf("%c%d here F1/F2 will be praised during a vote", 20*2, VIRTH+560, '\f', 0); // see position (left/top) setting in block above
 
+    if(showplayersnumber && multiplayer(NULL) && !intermission)
+    {
+        int ptop = 900 + 3*FONTH/2;
+        if(m_teammode && (m_arena || showplayersnumber == 2))
+        {
+            int totalteamsize[2] = {0, 0}, aliveteamsize[2] = {0, 0};
+            loopv(players) if(players[i] && team_isactive(players[i]->team))
+            {
+                totalteamsize[players[i]->team]++;
+                if(players[i]->state == CS_ALIVE) aliveteamsize[players[i]->team]++;
+            }
+            if(team_isactive(player1->team))
+            {
+                totalteamsize[player1->team]++;
+                if(player1->state == CS_ALIVE) aliveteamsize[player1->team]++;
+            }
+            defformatstring(CLA_str)("CLA:");
+            defformatstring(RVSF_str)("RVSF:");
+            defformatstring(CLA_pl)("\f%d%d\f%d/%d", aliveteamsize[TEAM_CLA] ? 5 : 4, aliveteamsize[TEAM_CLA], totalteamsize[TEAM_CLA] ? 5 : 4, totalteamsize[TEAM_CLA]);
+            defformatstring(RVSF_pl)("\f%d%d\f%d/%d", aliveteamsize[TEAM_RVSF] ? 5 : 4, aliveteamsize[TEAM_RVSF], totalteamsize[TEAM_RVSF] ? 5 : 4, totalteamsize[TEAM_RVSF]);
+            draw_text(CLA_str, VIRTW*2 - 500, ptop);
+            draw_text(CLA_pl, VIRTW*2 - (text_width(CLA_pl) + FONTH), ptop);
+            draw_text(RVSF_str, VIRTW*2 - 500, ptop + 3*FONTH/2);
+            draw_text(RVSF_pl, VIRTW*2 - (text_width(RVSF_pl) + FONTH), ptop + 3*FONTH/2);
+        }
+        else
+        {
+            if(m_arena)
+            {
+                int totalplayerssize = 0, aliveplayerssize = 0;
+                loopv(players) if(players[i] && team_isactive(players[i]->team))
+                {
+                    totalplayerssize++;
+                    if(players[i]->state == CS_ALIVE) aliveplayerssize++;
+                }
+                if(team_isactive(player1->team))
+                {
+                    totalplayerssize++;
+                    if(player1->state == CS_ALIVE) aliveplayerssize++;
+                }
+                defformatstring(players_str)("Players:\t\f%d%d\f5/%d", aliveplayerssize ? 5 : 4, aliveplayerssize, totalplayerssize);
+                draw_text(players_str, VIRTW*2 - (text_width(players_str) + FONTH), ptop);
+            }
+        }
+    }
+
     if(menu) rendermenu();
     else if(command) renderdoc(40, VIRTH, max(commandh*2 - VIRTH, 0));
 
