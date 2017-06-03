@@ -372,7 +372,7 @@ struct mitemmaploadmanual : mitemmanual
     string maptitle;
     Texture *image;
 
-    mitemmaploadmanual(gmenu *parent, const char *filename, const char *altfontname, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc = NULL) : mitemmanual(parent, text, action, NULL,        NULL,    NULL), filename(filename)
+    mitemmaploadmanual(gmenu *parent, const char *filename, char *text, char *action) : mitemmanual(parent, text, action, NULL, NULL, NULL), filename(filename)
     {
         image = notexture;
         maptitle[0] = '\0';
@@ -433,16 +433,11 @@ struct mitemmaploadmanual : mitemmanual
 
 struct mitemmapload : mitemmaploadmanual
 {
-    mitemmapload(gmenu *parent, const char *filename, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc = NULL) : mitemmaploadmanual(parent, filename, NULL, text, action, hoveraction, bgcolor, desc) {}
-//  mitemimage  (gmenu *parent, const char *filename, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc = NULL) : mitemimagemanual  (parent, filename, NULL, text, action, hoveraction, bgcolor, desc) {}
-//  mitemmapload(gmenu *parent, const char *filename, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc = NULL) : mitemmaploadmanual(parent, filename, NULL, text, action, hoveraction, bgcolor, desc) {}
-//  mitemmanual (gmenu *parent, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc) : mitem(parent, bgcolor), text(text), action(action), hoveraction(hoveraction), desc(desc) {}
+    mitemmapload(gmenu *parent, const char *filename, char *text, char *action) : mitemmaploadmanual(parent, filename, text, action) {}
 
     virtual ~mitemmapload()
     {
         DELETEA(filename);
-        //DELETEA(maptitle);
-        //DELETEA(mapstats);
         DELETEA(text);
         DELETEA(action);
     }
@@ -1017,7 +1012,7 @@ void menuitemmapload(char *name, char *text)
     string caction;
     if(!text || text[0]=='\0') formatstring(caction)("map %s", name);
     else formatstring(caction)("%s", text);
-    lastmenu->items.add(new mitemmapload(lastmenu, newstring(name), newstring(name), newstring(caction), NULL, NULL, NULL));
+    lastmenu->items.add(new mitemmapload(lastmenu, newstring(name), newstring(name), newstring(caction)));
 }
 COMMAND(menuitemmapload, "ss");
 
@@ -1412,7 +1407,7 @@ void gmenu::init()
                     }
                     defformatstring(fullname)("%s%s%s", dirlist->dir[0]?dirlist->dir+diroffset:"", dirlist->dir[0]?"/":"", f);
                     defformatstring(title)("%s", f);
-                    items.add(new mitemmapload(this, newstring(fullname), newstring(title), newstring(dirlist->action), NULL, NULL, NULL));
+                    items.add(new mitemmapload(this, newstring(fullname), newstring(title), newstring(dirlist->action)));
                 }
             }
             else if(!strcmp(dirlist->ext, "dmo"))
