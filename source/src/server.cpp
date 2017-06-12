@@ -881,6 +881,7 @@ int demoworkerthread(void *logfileprefix) // demo worker thread: compress demo d
             if(s.finish || s.error || s.remove)
             { // cleanup demo slot
                 if(demo_debug) tlog(ACLOG_INFO, "demoworkerthread(): cleanup slot %d, sequence #%d", i, s.sequence);
+                if(s.error || s.remove) s.done = false;
                 DELETEP(s.gz);
                 DELETEP(s.dbs);
                 if(s.db)
