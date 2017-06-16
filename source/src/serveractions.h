@@ -295,11 +295,15 @@ struct recorddemoaction : enableaction            // TODO: remove completely
 struct cleardemosaction : serveraction
 {
     int demo;
+    //vector<demo_s *> donedemos;
     void perform() { cleardemos(demo); }
     cleardemosaction(int demo) : demo(demo)
     {
+        //loopi(MAXDEMOS) if(demos[i].sequence && demos[i].done) donedemos.add(demos + i);
+        //donedemos.sort(donedemosort);
         role = roleconf('C');
-        if(isvalid()) formatstring(desc)("clear demo %d", demo);
+        //if(isvalid()) formatstring(desc)("clear demo %d (%s)", demo, demo ? (donedemos.inrange(demo-1) ? donedemos[demo-1]->info : "nonexistent") : "all");
+        if(isvalid()) formatstring(desc)("clear demo %d (%s)", demo, demo ? (demos[demo-1].sequence ? demos[demo-1].info : "nonexistent") : "all");
     }
 };
 
