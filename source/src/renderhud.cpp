@@ -446,7 +446,11 @@ bool insideradar(const vec &centerpos, float radius, const vec &o)
     return o.distxy(centerpos)<=radius;
 }
 
-bool isattacking(playerent *p) { return lastmillis-p->lastaction < 500; }
+bool isattacking(playerent *p)
+{
+    return lastmillis - p->lastaction < 300 && ((p->weaponsel == p->lastattackweapon && p->lastpain < p->lastaction && !p->weaponsel->reloading && !p->weaponchanging && p->weaponsel->type != GUN_GRENADE)
+    || (p == player1 ? ((grenades *)player1->weapons[GUN_GRENADE])->throwmillis : ((grenades *)p->weapons[GUN_GRENADE])->cookingmillis > 0));
+}
 
 vec getradarpos()
 {
