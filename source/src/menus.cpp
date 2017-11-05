@@ -775,6 +775,51 @@ struct mitemcheckbox : mitem
     virtual const char *getaction() { return action; }
 };
 
+// color bar menu item
+
+struct mitemcolorbar : mitem
+{
+    char *text;
+    char *r, *g, *b;
+    int rcolor, gcolor, bcolor;
+    char *action;
+    int pos;
+
+    mitemcolorbar(gmenu *parent, char *text, char *r, char *g, char *b, char *action, int pos, color *bgcolor) : mitem(parent, bgcolor, mitem::TYPE_COLORBAR), text(text), r(r), g(g), b(b), action(action), pos(pos) {}
+
+    ~mitemcolorbar()
+    {
+        DELETEA(text);
+        DELETEA(r);
+        DELETEA(g);
+        DELETEA(b);
+        DELETEA(action);
+    }
+
+    virtual int width() { return text_width(text) + (pos ? menurighttabwidth : FONTH + FONTH/3); }
+
+    virtual void render(int x, int y, int w)
+    {
+        char *ret = executeret(r);
+        if(ret) { rcolor = int(ATOI(ret)); delete[] ret; }
+        ret = executeret(g);
+        if(ret) { gcolor = int(ATOI(ret)); delete[] ret; }
+        ret = executeret(b);
+        if(ret) { bcolor = int(ATOI(ret)); delete[] ret; }
+        bool sel = isselection();
+        const static int boxsize = FONTH;
+        int offs = ((menurighttabwidth - FONTH) * ((msctrl % 41) ? pos : (50 + 50 * sinf(totalmillis / 300.0f + y)))) / 100;
+        int c = greyedout ? 128 : 255;
+
+        if(sel) renderbg(x, y, w-boxsize-offs-FONTH/2, menuselbgcolor);
+        draw_text(text, x, y, c, c, c);
+        x -= offs;
+        color colorbar(rcolor/255.0f, gcolor/255.0f, bcolor/255.0f);
+        blendbox(x+w-boxsize, y, x+w, y+boxsize, false, -1, &colorbar);
+    }
+
+    virtual const char *getaction() { return action; }
+};
 
 // console iface
 
@@ -985,6 +1030,13 @@ void menuitemcheckbox(char *text, char *value, char *action, int *pos)
     lastmenu->items.add(new mitemcheckbox(lastmenu, newstring(text), newstring(value), action[0] ? newstring(action) : NULL, clamp(*pos, 0, 100), NULL));
 }
 COMMAND(menuitemcheckbox, "sssi");
+
+void menuitemcolorbar(char *text, char *r, char *g, char *b, char *action, int *pos)
+{
+    if(!lastmenu) return;
+    lastmenu->items.add(new mitemcolorbar(lastmenu, newstring(text), newstring(r), newstring(g), newstring(b), action[0] ? newstring(action) : NULL, clamp(*pos, 0, 100), NULL));
+}
+COMMAND(menuitemcolorbar, "sssssi");
 
 void menuitemkeyinput(char *text, char *bindcmd)
 {

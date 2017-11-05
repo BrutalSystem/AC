@@ -206,7 +206,7 @@ struct mitem
     static color gray, white, whitepulse;
     int mitemtype;
 
-    enum { TYPE_TEXTINPUT, TYPE_KEYINPUT, TYPE_CHECKBOX, TYPE_MANUAL, TYPE_SLIDER };
+    enum { TYPE_TEXTINPUT, TYPE_KEYINPUT, TYPE_CHECKBOX, TYPE_MANUAL, TYPE_SLIDER, TYPE_COLORBAR };
 };
 
 struct mdirlist
