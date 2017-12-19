@@ -1049,7 +1049,12 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
     }
 
     if(menu) rendermenu();
-    else if(command) renderdoc(40, VIRTH, max(commandh*2 - VIRTH, 0));
+    else
+    {
+        if(command) renderdoc(40, VIRTH, max(commandh*2 - VIRTH, 0));
+        if(menumusic) audiomgr.stopmenumusic();
+    }
+
 
     if(!hidespecthud && !menu && p->state==CS_DEAD && p->spectatemode<=SM_DEATHCAM)
     {

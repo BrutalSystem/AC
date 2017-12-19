@@ -120,6 +120,45 @@ void audiomanager::music(char *name, int millis, char *cmd)
     }
 }
 
+bool menumusic = false;
+
+void audiomanager::stopmenumusic()
+{
+    audiomgr.stopsound();
+    menumusic = false;
+}
+
+VARFP(menumusicvol, 0, 128, 255, audiomgr.setmusicvol(menumusicvol));
+
+void audiomanager::menuitemmusic(const char *name, int millis)
+{
+    if(nosound) return;
+    stopsound();
+    if(*name)
+    {
+        if(gamemusic->open(name))
+        {
+            // fade
+            if(millis > 0)
+            {
+                const int fadetime = 1000;
+                gamemusic->fadein(lastmillis, fadetime);
+                gamemusic->fadeout(lastmillis+millis, fadetime);
+            }
+
+            // play
+            if(!gamemusic->playback(true))
+            {
+                conoutf("could not play music: %s", name);
+                return;
+            }
+            setmusicvol(menumusicvol);
+            menumusic = true;
+        }
+        else conoutf("could not open music: %s", name);
+    }
+}
+
 void audiomanager::musicpreload(int id)
 {
     if(nosound) return;

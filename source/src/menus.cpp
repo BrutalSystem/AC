@@ -250,6 +250,48 @@ struct mitemtext : mitemmanual
     }
 };
 
+gmenu *menuwithmusic;
+int menuposmusic = -1;
+
+struct mitemmusic : mitemmanual
+{
+    mitemmusic(gmenu *parent, char *text, char *action, char *hoveraction, color *bgcolor, const char *desc = NULL) : mitemmanual(parent, text, action, hoveraction, bgcolor, desc) {}
+
+    virtual void focus(bool on)
+    {
+        if(on && hoveraction)
+        {
+            audiomgr.menuitemmusic(hoveraction, 0);
+            menuwithmusic = curmenu;
+            menuposmusic = curmenu->menusel;
+        }
+    }
+
+    virtual void render(int x, int y, int w)
+    {
+        int c = greyedout ? 128 : 255;
+        mitem::render(x, y, w);
+        const char *nl = strchr(text, '\n');
+        if(nl)
+        {
+            string l;
+            copystring(l, text, min(MAXSTRLEN, (int)strcspn(text, "\n") + 1));
+            draw_text(l, x, y, c, c, c);
+            draw_text(nl + 1, x + w - max(menurighttabwidth, text_width(nl + 1)), y, c, c, c);
+        }
+        else draw_text(text, x, y, c, c, c);
+        if(menumusic && menuposmusic != curmenu->menusel) audiomgr.stopmenumusic();
+    }
+
+    virtual ~mitemmusic()
+    {
+        DELETEA(text);
+        DELETEA(action);
+        DELETEA(hoveraction);
+        DELETEA(desc);
+    }
+};
+
 VARP(hidebigmenuimages, 0, 0, 1);
 
 struct mitemimagemanual : mitemmanual
@@ -616,6 +658,60 @@ struct mitemslider : mitem
     virtual const char *getaction() { return action; }
 };
 
+struct mitemslidermusic : mitemslider
+{
+    char *hoveraction;
+
+    mitemslidermusic(gmenu *parent, char *text, int _min, int _max, char *value, char *display, char *action, char *hoveraction, color *bgcolor, bool wrap, bool isradio) :
+    mitemslider(parent, text, _min, _max, value, display, action, bgcolor, wrap, isradio), hoveraction(hoveraction) {}
+
+
+    virtual ~mitemslidermusic()
+    {
+        DELETEA(text);
+        DELETEA(valueexp);
+        DELETEA(action);
+        DELETEA(hoveraction);
+    }
+
+    virtual void focus(bool on)
+    {
+        if(on && hoveraction)
+        {
+            audiomgr.menuitemmusic(hoveraction, 0);
+            menuwithmusic = curmenu;
+            menuposmusic = curmenu->menusel;
+        }
+    }
+
+    virtual void render(int x, int y, int w)
+    {
+        bool sel = isselection();
+        int range = max_-min_;
+        int cval = value-min_;
+
+        int tw = text_width(text), ow = isradio ? text_width(curval) : menurighttabwidth, pos = !isradio || ow < menurighttabwidth ? menurighttabwidth : ow;
+        if(sel)
+        {
+            renderbg(x + w - pos, y, ow, menuselbgcolor);
+            renderbg(x, y, w - pos - FONTH/2, menuseldescbgcolor);
+            if(pos - ow > FONTH/2) renderbg(x + w - pos + ow + FONTH/2, y, pos - ow - FONTH/2, menuseldescbgcolor);
+        }
+        int c = greyedout ? 128 : 255;
+        draw_text(text, x, y, c, c, c);
+        draw_text(curval, x + (isradio ? w - pos : tw), y, c, c, c);
+
+        if(!isradio)
+        {
+            blendbox(x+w-menurighttabwidth, y+FONTH/3, x+w, y+FONTH*2/3, false, -1, &gray);
+            int offset = (int)(cval/((float)range)*menurighttabwidth);
+            blendbox(x+w-menurighttabwidth+offset-FONTH/6, y, x+w-menurighttabwidth+offset+FONTH/6, y+FONTH, false, -1, greyedout ? &gray : (sel ? &whitepulse : &white));
+        }
+
+        if(menumusic && menuposmusic != curmenu->menusel) audiomgr.stopmenumusic();
+    }
+};
+
 // key input item
 
 struct mitemkeyinput : mitem
@@ -979,6 +1075,13 @@ void menuitem(char *text, char *action, char *hoveraction, char *desc)
 }
 COMMAND(menuitem, "ssss");
 
+void menuitemmusic(char *text, char *action, char *hoveraction, char *desc)
+{
+    if(!lastmenu) return;
+    lastmenu->items.add(new mitemmusic(lastmenu, newstring(text), newstring(action[0] ? action : text), hoveraction[0] ? newstring(hoveraction) : NULL, NULL, *desc ? newstring(desc) : NULL));
+}
+COMMAND(menuitemmusic, "ssss");
+
 void menuitemimage(char *name, char *text, char *action, char *hoveraction)
 {
     if(!lastmenu) return;
@@ -1016,6 +1119,13 @@ void menuitemslider(char *text, int *min_, int *max_, char *value, char *display
     lastmenu->items.add(new mitemslider(lastmenu, newstring(text), *min_, *max_, newstring(value), display, action[0] ? newstring(action) : NULL, NULL, *wrap != 0, false));
 }
 COMMAND(menuitemslider, "siisssi");
+
+void menuitemslidermusic(char *text, int *min_, int *max_, char *value, char *display, char *action, char *hoveraction, int *wrap)
+{
+    if(!lastmenu) return;
+    lastmenu->items.add(new mitemslidermusic(lastmenu, newstring(text), *min_, *max_, newstring(value), display, action[0] ? newstring(action) : NULL, hoveraction[0] ? newstring(hoveraction) : NULL, NULL, *wrap != 0, false));
+}
+COMMAND(menuitemslidermusic, "siissssi");
 
 void menuitemradio(char *text, int *min_, int *max_, char *value, char *display, char *action)
 {
@@ -1532,6 +1642,8 @@ void gmenu::render()
     if(previewtexture && *previewtexture) rendermenutexturepreview(previewtexture, w, previewtexturetitle);
     if(usefont) popfont(); // setfont("default");
     ignoreblinkingbit = false;
+
+    if(menumusic && strcmp(menuwithmusic->name, curmenu->name)) audiomgr.stopmenumusic();
 }
 
 void gmenu::renderbg(int x1, int y1, int x2, int y2, bool border)

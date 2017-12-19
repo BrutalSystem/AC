@@ -430,6 +430,8 @@ public:
     void musicsuggest(int id, int millis, bool rndofs);
     void musicfadeout(int id);
     void setmusicvol(int musicvol);
+    void menuitemmusic(const char *name, int millis);
+    void stopmenumusic();
 
     // sound handling
     location *_playsound(int n, const worldobjreference &r, int priority, float offset = 0.0f, bool loop = false);
