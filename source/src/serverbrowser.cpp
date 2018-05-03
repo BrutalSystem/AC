@@ -1320,6 +1320,7 @@ VARP(mastertype, 0, 1, 1); // 0: TCP direct, 1: HTTP proxy
 
 void retrieveservers(vector<char> &data)
 {
+    global_name = player1->name;
     if(mastertype)
     {
         httpget h;
