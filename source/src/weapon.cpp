@@ -1785,7 +1785,8 @@ void checkakimbo()
     if(player1->akimbo)
     {
         akimbo &a = *((akimbo *)player1->weapons[GUN_AKIMBO]);
-        if(a.timerout() || player1->state == CS_DEAD || player1->state == CS_SPECTATE)
+        bool isdeadorspect = player1->state == CS_DEAD || player1->state == CS_SPECTATE;
+        if(a.timerout() || isdeadorspect)
         {
             weapon &p = *player1->weapons[GUN_PISTOL];
             player1->akimbo = false;
@@ -1793,7 +1794,7 @@ void checkakimbo()
 
             if(player1->weaponsel->type==GUN_AKIMBO || (player1->weaponchanging && player1->nextweaponsel->type==GUN_AKIMBO))
             {
-                switch(akimboendaction)
+                switch(isdeadorspect ? 1 : akimboendaction)
                 {
                     case 0: player1->weaponswitch(player1->weapons[GUN_KNIFE]); break;
                     case 1:
@@ -1846,7 +1847,7 @@ void checkakimbo()
                 */
                 }
             }
-            if(player1->state != CS_DEAD && player1->state != CS_SPECTATE) audiomgr.playsoundc(S_AKIMBOOUT);
+            if(!isdeadorspect) audiomgr.playsoundc(S_AKIMBOOUT);
         }
     }
 }
