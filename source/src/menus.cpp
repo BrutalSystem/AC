@@ -136,6 +136,13 @@ void drawarrow(int dir, int x, int y, int size, float r = 1.0f, float g = 1.0f, 
     glEnable(GL_BLEND);
 }
 
+static bool iskeypressed(int key)
+{
+    int numkeys = 0;
+    Uint8* state = SDL_GetKeyState(&numkeys);
+    return key < numkeys && state[key] != 0;
+}
+
 #define MAXMENU 34
 
 bool menuvisible()
@@ -528,14 +535,17 @@ struct mitemtextinput : mitemtext
 
 // slider item
 VARP(wrapslider, 0, 0, 1);
+extern hashtable<const char *, ident> *idents;
 
 struct mitemslider : mitem
 {
     int min_, max_, step, value, maxvaluewidth;
+    float valuef;
     char *text, *valueexp, *action;
     string curval;
     vector<char *> opts;
-    bool wrap, isradio;
+    bool wrap, isradio, isident;
+    ident *id;
 
     mitemslider(gmenu *parent, char *text, int _min, int _max, char *value, char *display, char *action, color *bgcolor, bool wrap, bool isradio) : mitem(parent, bgcolor, mitem::TYPE_SLIDER),
                                min_(_min), max_(_max), value(_min), maxvaluewidth(0), text(text), valueexp(value), action(action), wrap(wrap), isradio(isradio)
@@ -551,6 +561,27 @@ struct mitemslider : mitem
                 if(max_ != -1) clientlogf("menuitemslider: display string length (%d) doesn't match max-min (%d) \"%s\" [%s]", opts.length(), max_ - min_ + 1, text, display);
                 max_ = min_ + opts.length() - 1;
             }
+        }
+
+        isident = false;
+        string aname;
+        filtertext(aname, valueexp, FTXT_CROPWHITE|FTXT_SAFECS);
+        id = idents->access(aname);
+        isident = id && (id->type == ID_VAR || id->type == ID_FVAR) ? true : false;
+
+        if(isradio && isident)
+        {
+                int i, j = 0;
+                for(i = min_; i <= max_; i++)
+                {
+                    if((id->type == ID_VAR && i == id->defaultval) || (id->type == ID_FVAR && i == (int)id->defaultvalf))
+                    {
+                        defformatstring(defopt)("\fY%s\f5", opts[j]);
+                        opts[j] = newstring(defopt);
+                        break;
+                    }
+                    j++;
+                }
         }
         getmaxvaluewidth();
     }
@@ -594,6 +625,23 @@ struct mitemslider : mitem
     {
         if(code == SDLK_LEFT) slide(false);
         else if(code == SDLK_RIGHT) slide(true);
+        if(code == SDLK_d && iskeypressed(SDLK_LCTRL) && isident)
+        {
+            if(id->type == ID_VAR) value = id->defaultval;
+            else
+            {
+                valuef = id->defaultvalf;
+                value = (int)valuef;
+            }
+            displaycurvalue();
+            if(action)
+            {
+                string v;
+                if(id->type == ID_VAR) itoa(v, value);
+                else ftoa(v, valuef);
+                execaction(v);
+            }
+        }
     }
 
     virtual void init()
@@ -603,6 +651,7 @@ struct mitemslider : mitem
         if(v)
         {
             value = clamp(int(ATOI(v)), min_, max_);
+            valuef = atof(v);
             delete[] v;
         }
         displaycurvalue();
@@ -617,6 +666,7 @@ struct mitemslider : mitem
             if (value < min_) value = max_;
         }
         else value = min(max_, max(min_, value));
+        valuef = (float)value;
         displaycurvalue();
         if(action)
         {
@@ -637,8 +687,29 @@ struct mitemslider : mitem
         {
             int idx = value - min_;
             copystring(curval, opts.inrange(idx) ? opts[idx] : "");
+            if(isident)
+            {
+                if((id->type == ID_VAR && value == id->defaultval) || (id->type == ID_FVAR && valuef == id->defaultvalf))
+                {
+                    string defcurval;
+                    copystring(defcurval, curval);
+                    formatstring(curval)("\fY%s", defcurval);
+                }
+            }
         }
-        else itoa(curval, value); // display number only
+        else // display number only
+        {
+            itoa(curval, value);
+            if(isident)
+            {
+                if(id->type == ID_VAR && value == id->defaultval) formatstring(curval)("\fY%d", value);
+                else if(id->type == ID_FVAR)
+                {
+                    if(valuef == id->defaultvalf) formatstring(curval)("\fY%.1f", valuef);
+                    else ftoa(curval, valuef);
+                }
+            }
+        }
     }
 
     void getmaxvaluewidth()
@@ -1246,12 +1317,6 @@ void menuselectiondescbgcolor(char *r, char *g, char *b, char *a)
 }
 COMMAND(menuselectiondescbgcolor, "ssss");
 
-static bool iskeypressed(int key)
-{
-    int numkeys = 0;
-    Uint8* state = SDL_GetKeyState(&numkeys);
-    return key < numkeys && state[key] != 0;
-}
 
 bool menukey(int code, bool isdown, int unicode, SDLMod mod)
 {
