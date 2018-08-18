@@ -443,6 +443,14 @@ struct mitemtextinput : mitemtext
         hideinput = (maskinput != 0);
     }
 
+    virtual ~mitemtextinput()
+    {
+        DELETEA(text);
+        DELETEA(defaultvalueexp);
+        DELETEA(action);
+        DELETEA(hoveraction);
+    }
+
     virtual int width()
     {
         return text_width(text) + menurighttabwidth;
