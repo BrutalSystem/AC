@@ -459,6 +459,8 @@ void audiomanager::writesoundconfig(stream *f)
     }
 }
 
+VARP(muteownvoicecoms, 0, 0, 1);
+
 void voicecom(char *sound, char *text)
 {
     if(!sound || !sound[0]) return;
@@ -469,15 +471,15 @@ void voicecom(char *sound, char *text)
         defformatstring(soundpath)("voicecom/%s", sound);
         int s = audiomgr.findsound(soundpath, 0, gamesounds);
         if(!gamesound_isvoicecom(s)) return;
-        if(voicecomsounds>0) audiomgr.playsound(s, SP_HIGH);
+        if(voicecomsounds > 0 && !muteownvoicecoms) audiomgr.playsound(s, SP_HIGH);
         if(gamesound_ispublicvoicecom(s)) // public
         {
-            addmsg(SV_VOICECOM, "ri", s);
+            if(!muteownvoicecoms) addmsg(SV_VOICECOM, "ri", s);
             toserver(text);
         }
         else // team
         {
-            addmsg(SV_VOICECOMTEAM, "ri", s);
+            if(!muteownvoicecoms) addmsg(SV_VOICECOMTEAM, "ri", s);
             defformatstring(teamtext)("%c%s", '%', text);
             toserver(teamtext);
         }
