@@ -1348,6 +1348,7 @@ void grenades::reset() { throwmillis = 0; cookingmillis = 0; if(owner == player1
 void grenades::onselecting()
 {
     reset();
+    updatelastaction(owner);
     bool local = (owner == player1);
     audiomgr.playsound(S_GUNCHANGE, owner, local ? SP_HIGH : SP_NORMAL);
 }
