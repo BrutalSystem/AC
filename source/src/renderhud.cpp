@@ -596,6 +596,23 @@ void drawradar_showmap(playerent *p, int w, int h)
             }
         }
     }
+    else if(editmode)
+    {
+        glColor4f(1.0f, 1.0f, 1.0f, (sinf(lastmillis / 100.0f) + 1.0f) / 2.0f);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        int flagbasescount = 0;
+        loopv(ents)
+        {
+            entity &e = ents[i];
+            if(e.type==CTF_FLAG)
+            {
+                vec pos = vec(e.x, e.y, 0).sub(mdd).mul(coordtrans);
+                drawradarent(pos.x, pos.y, 0, team_base(e.attr2), 3, iconsize, false, !minimapfixed); // draw bases
+                flagbasescount++;
+            }
+            if(flagbasescount == 2) break;
+        }
+    }
     glEnable(GL_BLEND);
     glPopMatrix();
 }
@@ -699,6 +716,27 @@ void drawradar_vicinity(playerent *p, int w, int h)
                     }
                 }
             }
+        }
+    }
+    else if(editmode)
+    {
+        glColor4f(1.0f, 1.0f, 1.0f, (sinf(lastmillis / 100.0f) + 1.0f) / 2.0f);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        int flagbasescount = 0;
+        loopv(ents)
+        {
+            entity &e = ents[i];
+            if(e.type==CTF_FLAG)
+            {
+                vec pos = vec(e.x, e.y, 0).sub(d->o);
+                if(pos.sqrxy() < d2s)
+                {
+                    pos.mul(scaled);
+                    drawradarent(pos.x, pos.y, 0, team_base(e.attr2), 3, iconsize, false); // draw bases [circle doesn't need rotating]
+                }
+                flagbasescount++;
+            }
+            if(flagbasescount == 2) break;
         }
     }
     glEnable(GL_BLEND);
