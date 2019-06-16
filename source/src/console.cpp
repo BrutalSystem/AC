@@ -128,9 +128,43 @@ void conoutf(const char *s, ...)
     delete[] conline; conline=newstring(sf);
 }
 
+VARP(shownickhintinconsole, 0, 1, 1);
+
 int rendercommand(int x, int y, int w)
 {
-    const char *useprompt = cmdprompt ? cmdprompt : "#";
+    defformatstring(useprompt)("%s", cmdprompt ? cmdprompt : "#");
+
+    if(shownickhintinconsole) // show in console a nick of player with matching client number
+    {
+        vector<const char *> cncommands;
+        const char *cncmds = getalias("__cncmds");
+        if(cncmds)
+        {
+            char *temp = newstring(cncmds), *b, *pch = strtok_r(temp, " ", &b);
+            while(pch)
+            {
+                cncommands.add(pch);
+                pch = strtok_r (NULL, " ", &b);
+            }
+            temp = newstring(cmdline.buf);
+            pch = strtok_r(temp, " ", &b);
+            if(pch != NULL)
+            {
+                loopv(cncommands) if(!strcmp(pch, cncommands[i]))
+                {
+                    pch = strtok_r (NULL, " ", &b);
+                    if(pch != NULL && isdigit(pch[0]))
+                    {
+                        playerent *to = getclient(atoi(pch));
+                        if(to) formatstring(useprompt)("\f1@%s\f5", colorname(to));
+                    }
+                    break;
+                }
+            }
+            delete[] temp;
+        }
+    }
+
     defformatstring(s)("%s %s", useprompt, cmdline.buf);
     int width, height;
     text_bounds(s, width, height, w);
