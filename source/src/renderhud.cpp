@@ -781,6 +781,7 @@ string enginestateinfo = "";
 COMMANDF(getEngineState, "", () { result(enginestateinfo); });
 
 VARP(gametimedisplay,0,1,2);
+VARP(gametimepos,0,1,1);
 VARP(dbgpos,0,0,1);
 VARP(showtargetname,0,1,1);
 VARP(showspeed, 0, 0, 1);
@@ -966,7 +967,7 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
             }
         }
         formatstring(gtime)("%02d:%02d", gtmin, gtsec);
-        if(gametimedisplay) draw_text(gtime, (VIRTW-225-10)*2 - (text_width(gtime)/2 + FONTH/2), 20);
+        if(gametimedisplay) draw_text(gtime, gametimepos ? (VIRTW-225-10)*2 - (text_width(gtime)/2 + FONTH/2) : (2*VIRTW - text_width(gtime))/2, 20);
     }
 
     if(hidevote < 2 && multiplayer(NULL))
