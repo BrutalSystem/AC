@@ -1145,7 +1145,22 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
             if(!offs || scores[2] || scores[3]) loopi(2) // flag state or frag-counter
             {
                 bool inbase = flaginfos[i].state == CTFF_INBASE || offs;
-                drawctficon(i*120+VIRTW/4.0f*3.0f, 1650, 120, i + (inbase || flagscorehudtransparency == 2 ? 0 : 2), offs / 2, 1/4.0f, inbase || !flagscorehudtransparency ? 255 : 100);
+                int flagstolen = flaginfos[0].state == CTFF_STOLEN ? 0 : (flaginfos[1].state == CTFF_STOLEN ? 1 : -1), flagkeptteam = -1;
+                if(m_ktf && m_teammode && flagstolen != -1)
+                {
+                    if(flaginfos[flagstolen].actor == player1) flagkeptteam = player1->team;
+                    else
+                    {
+                        loopvj(players) if(flaginfos[flagstolen].actor == players[j])
+                        {
+                            flagkeptteam = players[j]->team;
+                            break;
+                        }
+                    }
+                }
+                bool flagstolenicon = i == flagkeptteam;
+                drawctficon(i*120+VIRTW/4.0f*3.0f, 1650, 120, flagstolenicon ? i : (i + (inbase || flagscorehudtransparency == 2 ? 0 : 2)), flagstolenicon ? 1 : offs/2, flagstolenicon ? 1/2.0f : 1/4.0f, inbase || !flagscorehudtransparency ? 255 : 100);
+
                 if(m_teammode)
                 {
                     defformatstring(count)("\f%c%d", cc[i], scores[i + offs]);
