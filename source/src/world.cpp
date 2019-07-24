@@ -695,8 +695,7 @@ bool empty_world(int factor, bool force)    // main empty world creation routine
     int oldfactor = sfactor;
     bool copy = false;
     if(world && factor<0) { factor = sfactor + (factor == -2 ? -1 : 1); copy = true; }
-    if(factor<SMALLEST_FACTOR) factor = SMALLEST_FACTOR;
-    if(factor>LARGEST_FACTOR) factor = LARGEST_FACTOR;
+    factor = clamp(factor, SMALLEST_FACTOR, LARGEST_FACTOR);
     if(copy && oldfactor == factor) return false;
     bool shrink = factor < oldfactor;
     bool clearmap = !copy && world;

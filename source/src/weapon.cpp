@@ -1265,6 +1265,7 @@ void grenades::attackfx(const vec &from, const vec &to, int millis) // other pla
     cookingmillis = millis;
     if(millis == 0 || millis == -1)
     {
+        throwmillis = 0;
         state = GST_INHAND;
         audiomgr.playsound(S_GRENADEPULL, owner); // activate
     }
@@ -1347,10 +1348,8 @@ void grenades::reset() { throwmillis = 0; cookingmillis = 0; if(owner == player1
 
 void grenades::onselecting()
 {
+    weapon::onselecting();
     reset();
-    updatelastaction(owner);
-    bool local = (owner == player1);
-    audiomgr.playsound(S_GUNCHANGE, owner, local ? SP_HIGH : SP_NORMAL);
 }
 
 void grenades::onownerdies()

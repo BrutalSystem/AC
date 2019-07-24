@@ -1268,7 +1268,7 @@ void CWaypointClass::StartFlood()
 {
      if (m_bFlooding) return;
 
-     conoutf("Starting flood, this may take a while on large maps....");
+     conoutf("Starting flood, this may take a while on large maps...");
      m_bFlooding = true;
      m_iFloodStartTime = SDL_GetTicks();
      m_iCurFloodX = m_iCurFloodY = MINBORD;

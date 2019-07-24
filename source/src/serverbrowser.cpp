@@ -876,7 +876,7 @@ const char *favcatcheck(serverinfo &si, const char *ckeys, char *autokeys = NULL
     return res ? nkeys : NULL;
 }
 
-void serverbrowseralternativeviews(int shiftdirection)
+void serverbrowseralternateviews(int shiftdirection)
 {
     if(searchlan == 2) return;
     const char *ckeys = getalias("serverbrowseraltviews");
@@ -1218,11 +1218,11 @@ bool serverskey(void *menu, int code, bool isdown, int unicode)
             return true;
 
         case SDLK_LEFTBRACKET:
-            serverbrowseralternativeviews(-1);
+            serverbrowseralternateviews(-1);
             return true;
 
         case SDLK_RIGHTBRACKET:
-            serverbrowseralternativeviews(1);
+            serverbrowseralternateviews(1);
             return true;
 
         case SDLK_F5:

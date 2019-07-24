@@ -1113,7 +1113,7 @@ char *getfiledesc(const char *dir, const char *name, const char *ext) // extract
         if(customdesc)
         {
             int textlen = strlen(text);
-            concatformatstring(text, " \n\f4(Description: \f0%s\f4)", customdesc);
+            concatformatstring(text, " \n\f4Description: \f0%s\f4", customdesc);
             ASSERT(MAXSTRLEN > 2 * DHDR_DESCCHARS);
             text[textlen + DHDR_DESCCHARS - 1] = '\0';
         }

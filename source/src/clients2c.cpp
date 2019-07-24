@@ -1528,7 +1528,7 @@ void receivefile(uchar *data, int len)
         case SV_RECVMAP:
         {
             getstring(text, p);
-            conoutf("received map \"%s\" from server, reloading..", text);
+            conoutf("received map \"%s\" from server, reloading...", text);
             int mapsize = getint(p);
             int cfgsize = getint(p);
             int cfgsizegz = getint(p);

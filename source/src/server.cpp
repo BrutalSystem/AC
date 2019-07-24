@@ -671,7 +671,7 @@ void enddemorecord()
     //2010oct10:ft: suggests : formatstring(d.info)("%s, %s, %.2f%s", modestr(gamemode), smapname, len > 1024*1024 ? len/(1024*1024.f) : len/1024.0f, len > 1024*1024 ? "MB" : "kB"); // the datetime bit is pretty useless in the servmesg, no?!
     formatstring(d.info)("%s: %s, %s, %.2f%s", asctimestr(), modestr(gamemode), smapname, len > 1024*1024 ? len/(1024*1024.f) : len/1024.0f, len > 1024*1024 ? "MB" : "kB");
     if(mr) { concatformatstring(d.info, ", %d mr", mr); concatformatstring(d.file, "_%dmr", mr); }
-    defformatstring(msg)("Demo \"%s\" recorded\nPress F10 to download it from the server..", d.info);
+    defformatstring(msg)("Demo \"%s\" recorded\nPress F10 to download it from the server...", d.info);
     sendservmsg(msg);
     logline(ACLOG_INFO, "Demo \"%s\" recorded.", d.info);
 
@@ -4319,7 +4319,7 @@ void initserver(bool dedicated, int argc, char **argv)
     int conthres = scl.verbose > 1 ? ACLOG_DEBUG : (scl.verbose ? ACLOG_VERBOSE : ACLOG_INFO);
     if(dedicated && !initlogging(identity, scl.syslogfacility, conthres, scl.filethres, scl.syslogthres, scl.logtimestamp))
         printf("WARNING: logging not started!\n");
-    logline(ACLOG_INFO, "logging local AssaultCube server (version %d, protocol %d/%d) now..", AC_VERSION, SERVER_PROTOCOL_VERSION, EXT_VERSION);
+    logline(ACLOG_INFO, "logging local AssaultCube server (version %d, protocol %d/%d) now...", AC_VERSION, SERVER_PROTOCOL_VERSION, EXT_VERSION);
 
     copystring(servdesc_current, scl.servdesc_full);
     servermsinit(scl.master ? scl.master : AC_MASTER_URI, scl.ip, CUBE_SERVINFO_PORT(scl.serverport), dedicated);
