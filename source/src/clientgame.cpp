@@ -61,11 +61,13 @@ bool duplicatename(playerent *d, char *name = NULL)
 char *colorname(playerent *d, char *name, const char *prefix)
 {
     if(!name) name = d->name;
-    if(name[0] && !duplicatename(d, name)) return name;
+    bool isdname = duplicatename(d, name);
+    if(name[0] && !isdname && !getigraph(name + 1)) return name;
     static string cname[4];
     static int num = 0;
     num = (num + 1) % 4;
-    formatstring(cname[num])("%s%s \fs\f6(%d)\fr", prefix, name, d->clientnum);
+    defformatstring(clientnum)(" \fs\f6(%d)\fr", d->clientnum);
+    formatstring(cname[num])("\fs%s\fr%s", name, (isdname || !name[0]) ? clientnum : "");
     return cname[num];
 }
 
