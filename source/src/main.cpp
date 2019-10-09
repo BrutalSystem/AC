@@ -384,6 +384,7 @@ void mapscreenshot(const char *imagepath, bool mapshot, int fileformat, float sc
 FVARP(screenshotscale, 0.1f, 1.0f, 1.0f);
 VARP(jpegquality, 10, 85, 100);  // best: 100 - good: 85 [default] - bad: 70 - terrible: 50
 VARP(screenshottype, 0, 1, 2);
+VARP(screenshottimelocal, 0, 1, 2);
 
 const char *getscrext()
 {
@@ -396,8 +397,8 @@ void screenshot(const char *filename)
 {
     static string buf;
     if(filename && filename[0]) formatstring(buf)("screenshots/%s%s", filename, getscrext());
-    else if(getclientmap()[0]) formatstring(buf)("screenshots/%s_%s_%s%s", timestring(), behindpath(getclientmap()), modestr(gamemode, true), getscrext());
-    else formatstring(buf)("screenshots/%s%s", timestring(), getscrext());
+    else if(getclientmap()[0]) formatstring(buf)("screenshots/%s_%s_%s%s", (!screenshottimelocal ||  (screenshottimelocal == 1  && multiplayer(NULL))) ? timestring() : timestring(true), behindpath(getclientmap()), modestr(gamemode, true), getscrext());
+    else formatstring(buf)("screenshots/%s%s", (!screenshottimelocal ||  (screenshottimelocal == 1  && multiplayer(NULL))) ? timestring() : timestring(true), getscrext());
     path(buf);
     mapscreenshot(buf, false, screenshottype, screenshotscale, 0, jpegquality);
 }
@@ -405,7 +406,7 @@ COMMAND(screenshot, "s");
 
 void mapshot()
 {
-    defformatstring(buf)("screenshots" PATHDIVS "mapshot_%s_%s%s", behindpath(getclientmap()), timestring(), getscrext());
+    defformatstring(buf)("screenshots" PATHDIVS "mapshot_%s_%s%s", behindpath(getclientmap()), timestring(true), getscrext());
     mapscreenshot(buf, true, screenshottype, screenshotscale, 0, jpegquality);
 }
 COMMAND(mapshot, "");
