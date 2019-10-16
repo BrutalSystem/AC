@@ -39,19 +39,30 @@ void checkweaponswitch()
     }
 }
 
+bool waitfornade = false, akimboforceswitch = false;
+weapon *wd;
+
 void selectweapon(weapon *w)
 {
-    if(!w || !player1->weaponsel->deselectable()) return;
-    if(w->selectable())
+    if(!w || (!akimboforceswitch && !player1->weaponsel->deselectable())) return;
+    if(w->selectable() || akimboforceswitch)
     {
         if(player1->attacking && player1->state == CS_ALIVE) attack(false);
         int i = w->type;
         // substitute akimbo
         weapon *akimbo = player1->weapons[GUN_AKIMBO];
         if(w->type==GUN_PISTOL && akimbo->selectable()) w = akimbo;
-
-        player1->weaponswitch(w);
-        exechook(HOOK_SP, "onWeaponSwitch", "%d", i);
+        if(player1->weapons[GUN_GRENADE]->busy() && (lastmillis - player1->lastaction < 400))
+        {
+            waitfornade = true;
+            wd = w;
+            return;
+        }
+        else
+        {
+            player1->weaponswitch(w);
+            exechook(HOOK_SP, "onWeaponSwitch", "%d", i);
+        }
     }
 }
 
@@ -1683,8 +1694,9 @@ void akimbo::onammopicked()
     {
         if(akimboautoswitch || owner->weaponsel->type==GUN_PISTOL)
         {
-            if(player1->weapons[GUN_GRENADE]->busy()) player1->attacking = false;
-            owner->weaponswitch(this);
+            akimboforceswitch = true;
+            selectweapon(this);
+            akimboforceswitch = false;
         }
         addmsg(SV_AKIMBO, "ri", lastmillis);
     }
@@ -1851,6 +1863,11 @@ void checkakimbo()
 
 void checkweaponstate()
 {
+    if(waitfornade && !(player1->weapons[GUN_GRENADE]->busy() && (lastmillis - player1->lastaction < 400)))
+    {
+        waitfornade = false;
+        if(wd) selectweapon(wd);
+    }
     checkweaponswitch();
     checkakimbo();
 }
