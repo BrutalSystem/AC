@@ -426,6 +426,13 @@ void renderscores(void *menu, bool init)
             //printf("SERVERLINE: %s\n", serverline);
         }
     }
+    else if(watchingdemo)
+    {
+        extern char* curdemofile;
+        char *demodesc = getfiledesc("demos", curdemofile, "dmo", false);
+        concatformatstring(serverline, "%s", demodesc);
+        DELSTRING(demodesc);
+    }
 
     menureset(menu);
     loopv(scorelines) menuimagemanual(menu, NULL, "radaricons", scorelines[i].getcols(), NULL, scorelines[i].bgcolor);

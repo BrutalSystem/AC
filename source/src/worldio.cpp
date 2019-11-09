@@ -1085,7 +1085,7 @@ COMMANDF(loadmap, "s", (char *mapname)
     intret(!multiplayer("loadmap") ? load_world(mapname) : -42);
 });
 
-char *getfiledesc(const char *dir, const char *name, const char *ext) // extract demo and map descriptions
+char *getfiledesc(const char *dir, const char *name, const char *ext, bool getdemocustdesc) // extract demo and map descriptions
 {
     if(!dir || !name || !ext) return NULL;
     defformatstring(fn)("%s/%s.%s", dir, name, ext);
@@ -1108,14 +1108,17 @@ char *getfiledesc(const char *dir, const char *name, const char *ext) // extract
         }
         formatstring(text)("%s%s", tag, hdr.desc);
         text[DHDR_DESCCHARS - 1] = '\0';
-        formatstring(demodescalias)("demodesc_%s", name);
-        const char *customdesc = getalias(demodescalias);
-        if(customdesc)
+        if(getdemocustdesc)
         {
-            int textlen = strlen(text);
-            concatformatstring(text, " \n\f4Description: \f0%s\f4", customdesc);
-            ASSERT(MAXSTRLEN > 2 * DHDR_DESCCHARS);
-            text[textlen + DHDR_DESCCHARS - 1] = '\0';
+            formatstring(demodescalias)("__demodesc_%s", name);
+            const char *customdesc = getalias(demodescalias);
+            if(customdesc)
+            {
+                int textlen = strlen(text);
+                concatformatstring(text, " \n\f4Description: \f0%s\f4", customdesc);
+                ASSERT(MAXSTRLEN > 2 * DHDR_DESCCHARS);
+                text[textlen + DHDR_DESCCHARS - 1] = '\0';
+            }
         }
         return newstring(text);
     }
