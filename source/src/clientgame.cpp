@@ -50,11 +50,28 @@ bool duplicatename(playerent *d, char *name = NULL)
     if(!name) name = d->name;
     if(d!=player1 && !strcmp(name, player1->name) && !watchingdemo) return true;
     loopv(players) if(players[i] && d!=players[i] && !strcmp(name, players[i]->name)) return true;
-    const char *ambiguousnames[] = { "YOU", "Y0U", "TEAMMATE" };
+    const char *ckeys = getalias("ambiguousnames");
+    if(!ckeys) return false;
+    const char *sep = " \t\n\r";
+    char *keys = newstring(ckeys), *b, *k = strtok_r(keys, sep, &b);
+    vector<char *> cats;
+    while(k)
+    {
+        cats.add(k);
+        k = strtok_r(NULL, sep, &b);
+    }
     string nameuc;
     copystring(nameuc, name);
     strtoupper(nameuc);
-    loopi(sizeof(ambiguousnames)/sizeof(ambiguousnames[0])) if(!strcmp(nameuc, ambiguousnames[i])) return true;
+    loopv(cats)
+    {
+        if(!strcmp(nameuc, cats[i]))
+        {
+            delete[] keys;
+            return true;
+        }
+    }
+    delete[] keys;
     return false;
 }
 
