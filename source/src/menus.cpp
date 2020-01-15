@@ -1526,6 +1526,8 @@ void gmenu::conprintmenu()
 const char *menufilesortorders[] = { "normal", "reverse", "ignorecase", "ignorecase_reverse", "" };
 int (*menufilesortcmp[])(const char **, const char **) = { stringsort, stringsortrev, stringsortignorecase, stringsortignorecaserev };
 
+VARP(demosubdirs, 0, 1, 1);
+
 void gmenu::init()
 {
     if(!menuseldescbgcolor) menuseldescbgcolor = new color(0.2f, 0.2f, 0.2f, 0.2f);
@@ -1533,7 +1535,7 @@ void gmenu::init()
     {
         items.deletecontents();
 
-        if(dirlist->subdiraction)
+        if(dirlist->subdiraction && !dirlist->searchfile)
         {
             vector<char *> subdirs;
             if(dirlist->subdirdots) subdirs.add(newstring(".."));
@@ -1541,8 +1543,7 @@ void gmenu::init()
             loopv(subdirs)
             {
                 defformatstring(cdir)("\fs\f1[%s]\fr", subdirs[i]);
-                defformatstring(act)("%s %s", dirlist->subdiraction, escapestring(subdirs[i]));
-                items.add(new mitemtext(this, newstring(cdir), newstring(act), NULL, NULL, NULL));
+                items.add(new mitemtext(this, newstring(cdir), newstring(dirlist->subdiraction), NULL, NULL, NULL));
             }
         }
 
@@ -1599,9 +1600,41 @@ void gmenu::init()
             else if(!strcmp(dirlist->ext, "dmo"))
             {
                 if(!dirlist->searchfile || filefound) items.add(new mitemtext(this, f, newstring(dirlist->action), NULL, NULL, d));
+                else DELSTRING(d);
             }
             else items.add(new mitemtext(this, f, newstring(dirlist->action), NULL, NULL, d));
         }
+
+        if(demosubdirs && dirlist->searchfile && !strcmp(dirlist->ext, "dmo"))
+        {
+            vector<char *> subdirs;
+            listsubdirs(dirlist->dir, subdirs, stringsort);
+            loopv(subdirs)
+            {
+                vector<char *> subdirfiles;
+                defformatstring(subdir)("%s/%s", dirlist->dir, subdirs[i]);
+                listfiles(subdir, dirlist->ext, subdirfiles, menufilesortcmp[sortorderindex]);
+                loopv(subdirfiles)
+                {
+                    char *f = subdirfiles[i], *d = browsefiledesc ? getfiledesc(subdir, f, dirlist->ext) : NULL;
+                    bool filefound = false;
+                    string fuc, duc;
+                    copystring(fuc, f);
+                    strtoupper(fuc);
+                    copystring(duc, d ? d : "");
+                    strtoupper(duc);
+                    if(strstr(fuc, searchfileuc) || strstr(duc, searchfileuc)) filefound = true;
+                    if(filefound)
+                    {
+                        defformatstring(subdirfile)("\fs\f1[%s]/\fr%s", subdirs[i], f);
+                        defformatstring(subdirfileaction)("demo %s/%s", strchr(subdir, '/') + 1, f);
+                        items.add(new mitemtext(this, newstring(subdirfile), newstring(subdirfileaction), NULL, NULL, d));
+                    }
+                    else DELSTRING(d);
+                }
+            }
+        }
+
     }
     loopv(items) items[i]->init();
 }
