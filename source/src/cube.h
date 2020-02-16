@@ -55,7 +55,9 @@ extern int hwtexsize, hwmaxaniso;
 extern int maploaded, msctrl;
 extern float waterlevel;
 
-#define AC_VERSION 1202
+#define AC_VERSION 1300
+#define AC_PRERELEASE "dev"
+#define AC_FULL_VERSION STRINGIFY(AC_VERSION) "-" AC_PRERELEASE
 #define AC_MASTER_URI "ms.cubers.net"
 #define AC_MASTER_PORT 28760
 #define MAXCLIENTSONMASTER 16           // FIXME

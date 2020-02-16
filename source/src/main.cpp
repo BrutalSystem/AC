@@ -1373,4 +1373,5 @@ int main(int argc, char **argv)
 }
 
 VAR(version, 1, AC_VERSION, 0);
+SVARFF(fullversion, { fullversion = exchangestr(fullversion, AC_FULL_VERSION); }, {} );
 VAR(protocol, 1, PROTOCOL_VERSION, 0);
