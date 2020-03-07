@@ -346,9 +346,11 @@ void drawequipicons(playerent *p)
     glEnable(GL_BLEND);
 }
 
-void drawradarent(float x, float y, float yaw, int col, int row, float iconsize, bool pulse, const char *label = NULL, ...) PRINTFARGS(8, 9);
+VARP(minimaprotation, 0, 2, 3);
 
-void drawradarent(float x, float y, float yaw, int col, int row, float iconsize, bool pulse, const char *label, ...)
+void drawradarent(float x, float y, float yaw, int col, int row, float iconsize, bool pulse, bool rotated = true, const char *label = NULL, ...) PRINTFARGS(9, 10);
+
+void drawradarent(float x, float y, float yaw, int col, int row, float iconsize, bool pulse, bool rotated, const char *label, ...)
 {
     glPushMatrix();
     if(pulse) glColor4f(1.0f, 1.0f, 1.0f, 0.2f+(sinf(lastmillis/30.0f)+1.0f)/2.0f);
@@ -356,15 +358,16 @@ void drawradarent(float x, float y, float yaw, int col, int row, float iconsize,
     glTranslatef(x, y, 0);
     glRotatef(yaw, 0, 0, 1);
     drawradaricon(-iconsize/2.0f, -iconsize/2.0f, iconsize, col, row);
-    glPopMatrix();
+    if(!rotated || !(label && showmap)) glPopMatrix();
     if(label && showmap)
     {
-        glPushMatrix();
+        if(!rotated) glPushMatrix();
+        else glRotatef(-yaw+camera1->yaw, 0, 0, 1);
         glEnable(GL_BLEND);
-        glTranslatef(iconsize/2, iconsize/2, 0);
+        if(!rotated) glTranslatef(iconsize/2, iconsize/2, 0);
         glScalef(1/2.0f, 1/2.0f, 1/2.0f);
         defvformatstring(lbl, label, label);
-        draw_text(lbl, (int)(x*2), (int)(y*2));
+        draw_text(lbl, rotated ? (int)iconsize : (int)(x*2), rotated ? (int)iconsize : (int)(y*2));
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_BLEND);
         glPopMatrix();
@@ -478,7 +481,8 @@ void drawradar_showmap(playerent *p, int w, int h)
     int p_baseteam = p->team == TEAM_SPECT && spect3rd ? team_base(players[p->followplayercn]->team) : team_base(p->team);
     extern GLuint minimaptex;
     vec centerpos(VIRTW/2 , VIRTH/2, 0.0f);
-    if(showmapbackdrop)
+    bool minimapfixed = !minimaprotation || (minimaprotation == 1 && player1->spectatemode >= SM_FOLLOW1ST && player1->spectatemode <= SM_FLY) || (minimaprotation == 2 && player1->spectatemode >= SM_FOLLOW1ST && player1->spectatemode < SM_FLY);
+    if(showmapbackdrop && minimapfixed)
     {
         glDisable(GL_TEXTURE_2D);
         if(showmapbackdrop==2) glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_COLOR);
@@ -497,7 +501,13 @@ void drawradar_showmap(playerent *p, int w, int h)
         glColor3ub(255,255,255);
         glEnable(GL_TEXTURE_2D);
     }
-    glTranslatef(centerpos.x - halfviewsize, centerpos.y - halfviewsize , 0);
+    if(minimapfixed) glTranslatef(centerpos.x - halfviewsize, centerpos.y - halfviewsize, 0);
+    else
+    {
+        glTranslatef(centerpos.x, centerpos.y, 0);
+        glRotatef(-camera1->yaw, 0, 0, 1);
+        glTranslatef(-halfviewsize, -halfviewsize, 0);
+    }
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
     quad(minimaptex, 0, 0, minimapviewsize, 0.0f, 0.0f, 1.0f);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -513,7 +523,7 @@ void drawradar_showmap(playerent *p, int w, int h)
     vec mdd = vec(clmapdims.x1 - offx, clmapdims.y1 - offy, 0);
     vec ppv = vec(p->o).sub(mdd).mul(coordtrans);
 
-    if(!(p->isspectating() && spect3rd)) drawradarent(ppv.x, ppv.y, p->yaw, (p->state==CS_ALIVE || p->state==CS_EDITING) ? (isattacking(p) ? 2 : 0) : 1, 2, iconsize, isattacking(p), "%s", colorname(p)); // local player
+    if(!(p->isspectating() && spect3rd)) drawradarent(ppv.x, ppv.y, p->yaw, (p->state==CS_ALIVE || p->state==CS_EDITING) ? (isattacking(p) ? 2 : 0) : 1, 2, iconsize, isattacking(p), !minimapfixed, "%s", colorname(p)); // local player
     loopv(players) // other players
     {
         playerent *pl = players[i];
@@ -523,7 +533,7 @@ void drawradar_showmap(playerent *p, int w, int h)
         if(p->team < TEAM_SPECT && ((m_teammode && !isteam(p_baseteam, pl_baseteam)) || (!m_teammode && !(spect3rd && d == pl)))) continue;
         if(p->team == TEAM_SPECT && !(spect3rd && (isteam(p_baseteam, pl_baseteam) || d == pl))) continue;
         vec rtmp = vec(pl->o).sub(mdd).mul(coordtrans);
-        drawradarent(rtmp.x, rtmp.y, pl->yaw, pl->state==CS_ALIVE ? (isattacking(pl) ? 2 : 0) : 1, spect3rd && d == pl ? 2 : pl_baseteam, iconsize, isattacking(pl), "%s", colorname(pl));
+        drawradarent(rtmp.x, rtmp.y, pl->yaw, pl->state==CS_ALIVE ? (isattacking(pl) ? 2 : 0) : 1, spect3rd && d == pl ? 2 : pl_baseteam, iconsize, isattacking(pl), !minimapfixed, "%s", colorname(pl));
     }
     if(m_flags)
     {
@@ -537,30 +547,50 @@ void drawradar_showmap(playerent *p, int w, int h)
             if(hasflagent)
             {
                 vec pos = vec(e->x, e->y, 0).sub(mdd).mul(coordtrans);
-                drawradarent(pos.x, pos.y, 0, m_ktf ? 2 : f.team, 3, iconsize, false); // draw bases
+                drawradarent(pos.x, pos.y, 0, m_ktf ? 2 : f.team, 3, iconsize, false, !minimapfixed); // draw bases
             }
             if((f.state == CTFF_INBASE && hasflagent) || f.state == CTFF_DROPPED)
             {
-                vec fltxoff = vec(8, -8, 0);
-                vec cpos = vec(f.pos.x, f.pos.y, f.pos.z).sub(mdd).mul(coordtrans).add(fltxoff);
-                float flgoff=fabs((radarentsize*2.1f)-8);
-                drawradarent(cpos.x+flgoff, cpos.y-flgoff, 0, 3, m_ktf ? 2 : f.team, iconsize, false); // draw on entity pos or whereever dropped
+                vec fltoff = vec(0, 0, 0);
+                vec pos = vec(f.pos.x, f.pos.y, 0).sub(mdd).mul(coordtrans);
+                if(minimapfixed)
+                {
+                    float flgoff = 2.0f * radarentsize - radarentsize / 32.0f;
+                    fltoff.add(vec(flgoff, flgoff, 0));
+                }
+                else
+                {
+                    float flgoff = 3.0f * radarentsize - radarentsize / 5.0f;
+                    float ryaw = (camera1->yaw - 45) * RAD;
+                    fltoff.add(vec(flgoff * cosf(-ryaw), flgoff * sinf(-ryaw), 0));
+                }
+                drawradarent(pos.x + fltoff.x, pos.y - fltoff.y, minimapfixed ? 0 : camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, false, !minimapfixed); // draw on entity pos or whereever dropped
             }
             if(f.state == CTFF_STOLEN)
             {
                 if(m_teammode && !m_ktf && player1->team == TEAM_SPECT && p->spectatemode > SM_FOLLOW3RD_TRANSPARENT) continue;
-                float d2c = 1.6f * radarentsize/16.0f;
-                vec apos(d2c, -d2c, 0);
                 if(f.actor)
                 {
-                    apos.add(f.actor->o);
+                    vec fltoff = vec(0, 0, 0);
+                    vec pos(0, 0, 0);
+                    if(minimapfixed)
+                    {
+                        float flgoff = radarentsize / 10.0f;
+                        pos.add(vec(flgoff, -flgoff, 0));
+                    }
+                    else
+                    {
+                        float flgoff = radarentsize + radarentsize * 11.0f / 64.0f;
+                        float ryaw = (camera1->yaw - 45) * RAD;
+                        fltoff.add(vec(flgoff * cosf(-ryaw), flgoff * sinf(-ryaw), 0));
+                    }
                     bool tm = i != p_baseteam;
                     if(m_htf) tm = !tm;
                     else if(m_ktf) tm = true;
                     if(tm)
                     {
-                        apos.sub(mdd).mul(coordtrans);
-                        drawradarent(apos.x, apos.y, 0, 3, m_ktf ? 2 : f.team, iconsize, true); // draw near flag thief
+                        pos.add(f.actor->o).sub(mdd).mul(coordtrans);
+                        drawradarent(pos.x + fltoff.x, pos.y - fltoff.y, minimapfixed ? 0 : camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, true, !minimapfixed); // draw near flag thief
                     }
                 }
             }
@@ -601,7 +631,7 @@ void drawradar_vicinity(playerent *p, int w, int h)
     circle(minimaptex, halfviewsize, halfviewsize, halfviewsize, usecenter.x/(float)gdim, usecenter.y/(float)gdim, scaleh, 31); //Draw mimimaptext as radar background
     glTranslatef(halfviewsize, halfviewsize, 0);
 
-    if(!(p->isspectating() && spect3rd)) drawradarent(0, 0, p->yaw, (p->state==CS_ALIVE || p->state==CS_EDITING) ? (isattacking(p) ? 2 : 0) : 1, 2, iconsize, isattacking(p), "%s", colorname(p)); // local player
+    if(!(p->isspectating() && spect3rd)) drawradarent(0, 0, p->yaw, (p->state==CS_ALIVE || p->state==CS_EDITING) ? (isattacking(p) ? 2 : 0) : 1, 2, iconsize, isattacking(p)); // local player
     loopv(players) // other players
     {
         playerent *pl = players[i];
@@ -615,14 +645,13 @@ void drawradar_vicinity(playerent *p, int w, int h)
         if(isok)
         {
             rtmp.mul(scaled);
-            drawradarent(rtmp.x, rtmp.y, pl->yaw, pl->state==CS_ALIVE ? (isattacking(pl) ? 2 : 0) : 1, spect3rd && d == pl ? 2 : pl_baseteam, iconsize, isattacking(pl), "%s", colorname(pl));
+            drawradarent(rtmp.x, rtmp.y, pl->yaw, pl->state==CS_ALIVE ? (isattacking(pl) ? 2 : 0) : 1, spect3rd && d == pl ? 2 : pl_baseteam, iconsize, isattacking(pl));
         }
     }
     if(m_flags)
     {
         glColor4f(1.0f, 1.0f, 1.0f, (sinf(lastmillis / 100.0f) + 1.0f) / 2.0f);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        float d2c = 1.6f * radarentsize/16.0f;
         loopi(2) // flag items
         {
             flaginfo &f = flaginfos[i];
@@ -637,36 +666,35 @@ void drawradar_vicinity(playerent *p, int w, int h)
                     drawradarent(pos.x, pos.y, 0, m_ktf ? 2 : f.team, 3, iconsize, false); // draw bases [circle doesn't need rotating]
                 }
             }
+            float ryaw = (camera1->yaw - 45) * RAD;
             if((f.state == CTFF_INBASE && hasflagent) || f.state == CTFF_DROPPED)
             {
-                vec cpos = vec(f.pos.x, f.pos.y, f.pos.z).sub(d->o);
-                if(cpos.sqrxy() < d2s)
+                vec pos = vec(f.pos).sub(d->o);
+                if(pos.sqrxy() < d2s)
                 {
-                    cpos.mul(scaled);
-                    float flgoff=radarentsize/0.68f;
-                    float ryaw=(camera1->yaw-45)*RAD;
-                    float offx=flgoff*cosf(-ryaw);
-                    float offy=flgoff*sinf(-ryaw);
-                    drawradarent(cpos.x+offx, cpos.y-offy, camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, false); // draw flag on entity pos or whereever dropped
+                    pos.mul(scaled);
+                    float flgoff = iconsize * 9.0f / 16.0f;
+                    vec fltoff = vec(flgoff * cosf(-ryaw), flgoff * sinf(-ryaw), 0);
+                    drawradarent(pos.x + fltoff.x, pos.y - fltoff.y, camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, false); // draw flag on entity pos or whereever dropped
                 }
             }
             if(f.state == CTFF_STOLEN)
             {
                 if(m_teammode && !m_ktf && player1->team == TEAM_SPECT && p->spectatemode > SM_FOLLOW3RD_TRANSPARENT) continue;
-                vec apos(d2c, -d2c, 0);
                 if(f.actor)
                 {
-                    apos.add(f.actor->o);
                     bool tm = i != p_baseteam;
                     if(m_htf) tm = !tm;
                     else if(m_ktf) tm = true;
                     if(tm)
                     {
-                        apos.sub(d->o);
-                        if(apos.sqrxy() < d2s)
+                        vec pos = vec(f.actor->o).sub(d->o);
+                        if(pos.sqrxy() < d2s)
                         {
-                            apos.mul(scaled);
-                            drawradarent(apos.x, apos.y, camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, true); // draw near flag thief
+                            pos.mul(scaled);
+                            float flgoff = iconsize * 15.0f / 64.0f;
+                            vec fltoff = vec(flgoff * cosf(-ryaw), flgoff * sinf(-ryaw), 0);
+                            drawradarent(pos.x + fltoff.x, pos.y - fltoff.y, camera1->yaw, 3, m_ktf ? 2 : f.team, iconsize, true); // draw near flag thief
                         }
                     }
                 }
