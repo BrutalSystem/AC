@@ -7,12 +7,7 @@ void drawicon(Texture *tex, float x, float y, float s, int col, int row, float t
     if(tex && tex->xs == tex->ys) quad(tex->id, x, y, s, ts*col, ts*row, ts);
 }
 
-inline void turn_on_transparency(int alpha = 255)
-{
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4ub(255, 255, 255, alpha);
-}
+VARP(equipiconsblink, 0, 1, 1);
 
 void drawequipicon(float x, float y, int col, int row)
 {
@@ -20,9 +15,9 @@ void drawequipicon(float x, float y, int col, int row)
     if(!tex) tex = textureload("packages/misc/items.png", 3);
     if(tex)
     {
-        turn_on_transparency();
+        if(equipiconsblink) glEnable(GL_BLEND);
         drawicon(tex, x, y, 120, col, row, 1/4.0f);
-        glDisable(GL_BLEND);
+        if(equipiconsblink) glDisable(GL_BLEND);
     }
 }
 
@@ -40,13 +35,12 @@ void drawradaricon(float x, float y, float s, int col, int row)
     }
 }
 
-void drawctficon(float x, float y, float s, int col, int row, float ts, int alpha)
+void drawctficon(float x, float y, float s, int col, int row, float ts)
 {
     static Texture *ctftex = NULL, *htftex = NULL, *ktftex = NULL;
     if(!ctftex) ctftex = textureload("packages/misc/ctficons.png", 3);
     if(!htftex) htftex = textureload("packages/misc/htficons.png", 3);
     if(!ktftex) ktftex = textureload("packages/misc/ktficons.png", 3);
-    glColor4ub(255, 255, 255, alpha);
     if(m_htf)
     {
         if(htftex) drawicon(htftex, x, y, s, col, row, ts);
@@ -61,7 +55,6 @@ void drawctficon(float x, float y, float s, int col, int row, float ts, int alph
     }
 }
 
-VARP(votealpha, 0, 255, 255);
 void drawvoteicon(float x, float y, int col, int row, bool noblend)
 {
     static Texture *tex = NULL;
@@ -69,7 +62,6 @@ void drawvoteicon(float x, float y, int col, int row, bool noblend)
     if(tex)
     {
         if(noblend) glDisable(GL_BLEND);
-        else turn_on_transparency(votealpha); // if(transparency && !noblend)
         drawicon(tex, x, y, 240, col, row, 1/2.0f);
         if(noblend) glEnable(GL_BLEND);
     }
@@ -87,6 +79,8 @@ VARP(hideteamscorehud, 0, 1, 2);
 VARP(flagscorehudtransparency, 0, 2, 2);
 VARP(hideeditinfopanel, 0, 0, 1);
 VARP(hidevote, 0, 1, 2);
+VARP(votealpha, 0, 255, 255);
+VARP(voteiconblink, 0, 1, 1);
 VARP(hidehudmsgs, 0, 0, 1);
 VARP(hidehudequipment, 0, 0, 1);
 VARP(hideconsole, 0, 0, 1);
@@ -330,19 +324,28 @@ void drawequipicons(playerent *p)
 {
     glDisable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(1.0f, 1.0f, 1.0f, 0.2f+(sinf(lastmillis/100.0f)+1.0f)/2.0f);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    float iconalpha = 0.2f + (sinf(lastmillis / 100.0f) + 1.0f) / 2.0f;
 
     // health & armor
     if(p->armour) drawequipicon(HUDPOS_ARMOUR*2, 1650, (p->armour-1)/25, 2);
-    drawequipicon(HUDPOS_HEALTH*2, 1650, 2, 3);
     if(p->mag[GUN_GRENADE]) drawequipicon(oldfashionedgunstats ? (HUDPOS_GRENADE + 25)*2 : HUDPOS_GRENADE*2, 1650, 3, 1);
+
+    if(p->state!=CS_DEAD && p->health<=20 && !m_osok) glColor4f(1.0f, 1.0f, 1.0f, iconalpha);
+    drawequipicon(HUDPOS_HEALTH*2, 1650, 2, 3);
 
     // weapons
     int c = p->weaponsel->type != GUN_GRENADE ? p->weaponsel->type : getprevweaponsel(p), r = 0;
-    if(c==GUN_AKIMBO || c==GUN_CPISTOL) c = GUN_PISTOL; // same icon for akimb & pistol
+    if(c==GUN_AKIMBO || c==GUN_CPISTOL) c = GUN_PISTOL; // same icon for akimbo & pistol
     if(c>3) { c -= 4; r = 1; }
 
-    if(p->weaponsel && valid_weapon(p->weaponsel->type)) drawequipicon(HUDPOS_WEAPON*2, 1650, c, r);
+    if(p->weaponsel && valid_weapon(p->weaponsel->type))
+    {
+        if(!p->weaponsel->mag && p->weaponsel->type != GUN_KNIFE && p->weaponsel->type != GUN_GRENADE) glColor4f(1.0f, 1.0f, 1.0f, iconalpha);
+        else glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        drawequipicon(HUDPOS_WEAPON*2, 1650, c, r);
+    }
     glEnable(GL_BLEND);
 }
 
@@ -1052,15 +1055,19 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
                 formatstring(str)("%d yes vs. %d no", curvote->stats[VOTE_YES], curvote->stats[VOTE_NO]);
                 draw_text(str, left, top + 480, 255, 255, 255, votealpha);
 
+                //glBlendFunc(GL_SRC_ALPHA, GL_ONE); // original, worse visual effect
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 switch(curvote->result)
                 {
                     case VOTE_NEUTRAL:
-                        drawvoteicon(left, top, 0, 0, false);
+                        glColor4ub(255, 255, 255, votealpha);
+                        drawvoteicon(left, top, 0, 0, votealpha == 255 ? true : false);
                         if(!curvote->localplayervoted)
                             draw_text("\f3press F1/F2 to vote yes or no", left, top+560, 255, 255, 255, votealpha);
                         break;
                     default:
-                        drawvoteicon(left, top, (curvote->result-1)&1, 1, false);
+                        glColor4ub(255, 255, 255, voteiconblink ? (sinf(lastmillis / 100.0f) + 1.0f) * (votealpha / 2.0f) : votealpha);
+                        drawvoteicon(left, top, (curvote->result-1)&1, 1, (votealpha == 255 && !voteiconblink) ? true : false);
                         formatstring(str)("\f3vote %s", curvote->result == VOTE_YES ? "PASSED" : "FAILED");
                         draw_text(str, left, top + 560, 255, 255, 255, votealpha);
                         break;
@@ -1202,8 +1209,7 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
         {
             glLoadIdentity();
             glOrtho(0, VIRTW, VIRTH, 0, -1, 1);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-            turn_on_transparency(255);
+
             int scores[4], offs = m_flags ? 0 : 2;
             calcteamscores(scores);
             const char *cc = scores[offs] > 99 || scores[offs + 1] > 99 ? "31" : "55";
@@ -1225,12 +1231,19 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
                     }
                 }
                 bool flagstolenicon = i == flagkeptteam;
-                drawctficon(i*120+VIRTW/4.0f*3.0f, 1650, 120, flagstolenicon ? i : (i + (inbase || flagscorehudtransparency == 2 ? 0 : 2)), flagstolenicon ? 1 : offs/2, flagstolenicon ? 1/2.0f : 1/4.0f, inbase || !flagscorehudtransparency ? 255 : 100);
+
+                glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
+                //glBlendFunc(GL_SRC_ALPHA, GL_ONE); // original, worse visual effect
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                if(inbase || !flagscorehudtransparency) glDisable(GL_BLEND);
+                else glEnable(GL_BLEND);
+                drawctficon(i*120+VIRTW/4.0f*3.0f, 1650, 120, flagstolenicon ? i : (i + (inbase || flagscorehudtransparency == 2 ? 0 : 2)), flagstolenicon ? 1 : offs/2, flagstolenicon ? 1/2.0f : 1/4.0f);
 
                 if(m_teammode)
                 {
                     defformatstring(count)("\f%c%d", cc[i], scores[i + offs]);
                     int countwidth = text_width(count);
+                    glEnable(GL_BLEND);
                     draw_text(count, i * 120 + VIRTW / 4.0f * 3.0f + (countwidth > 114 ? (i ? 3 : (120 - countwidth - 3)) : (60 - countwidth / 2)), 1590);
                 }
             }
@@ -1241,12 +1254,15 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
                 if((flaginfos[0].state==CTFF_STOLEN && flaginfos[0].actor == p && flaginfos[0].ack) ||
                    (flaginfos[1].state==CTFF_STOLEN && flaginfos[1].actor == p && flaginfos[1].ack && ++ft))
                 {
-                    drawctficon(VIRTW-225-10, VIRTH*5/8, 225, ft, 1, 1/2.0f, (sinf(lastmillis/100.0f)+1.0f) *128);
+                    glColor4f(1.0f, 1.0f, 1.0f, (sinf(lastmillis / 100.0f) + 1.0f) / 2);
+                    glEnable(GL_BLEND);
+                    drawctficon(VIRTW-225-10, VIRTH*5/8, 225, ft, 1, 1/2.0f);
                 }
             }
         }
     }
 
+    glEnable(GL_BLEND);
     if(!hidehudmsgs) hudmsgs.render();
 
     glLoadIdentity();
