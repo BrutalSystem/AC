@@ -1428,6 +1428,17 @@ bool menukey(int code, bool isdown, int unicode, SDLMod mod)
                     screenshot(NULL);
                 }
                 break;
+
+            case SDLK_e:
+                mitem &m = *curmenu->items[menusel];
+                if(m.mitemtype == mitem::TYPE_MANUAL && !multiplayer(NULL))
+                {
+                    const char *cmname = curmenu->name;
+                    toggleedit(false);
+                    closemenu(cmname);
+                    showmenu(cmname);
+                }
+                break;
         }
         if(!curmenu->allowinput || !curmenu->items.inrange(menusel)) return false;
         mitem &m = *curmenu->items[menusel];
