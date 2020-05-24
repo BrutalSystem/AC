@@ -330,7 +330,7 @@ void drawequipicons(playerent *p)
 
     // health & armor
     if(p->armour) drawequipicon(HUDPOS_ARMOUR*2, 1650, (p->armour-1)/25, 2);
-    if(p->mag[GUN_GRENADE]) drawequipicon(oldfashionedgunstats ? (HUDPOS_GRENADE + 25)*2 : HUDPOS_GRENADE*2, 1650, 3, 1);
+    if(p->mag[GUN_GRENADE]) drawequipicon(oldfashionedgunstats ? (HUDPOS_GRENADE + (((float)screen->w / (float)screen->h > 1.5f) ? 75 : 25)) * 2 : HUDPOS_GRENADE*2, 1650, 3, 1);
 
     if(p->state!=CS_DEAD && p->health<=20 && !m_osok) glColor4f(1.0f, 1.0f, 1.0f, iconalpha);
     drawequipicon(HUDPOS_HEALTH*2, 1650, 2, 3);
