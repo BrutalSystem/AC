@@ -549,7 +549,7 @@ void zapplayer(playerent *&d)
 
 void movelocalplayer()
 {
-    if(player1->state==CS_DEAD && !player1->allowmove())
+    if(!player1->allowmove())
     {
         if(lastmillis-player1->lastpain<2000)
         {
@@ -1789,6 +1789,7 @@ void spectatemode(int mode)
     showscores(false);
     switch(mode)
     {
+        case SM_DEATHCAM:
         case SM_FOLLOW1ST:
         case SM_FOLLOW3RD:
         case SM_FOLLOW3RD_TRANSPARENT:
