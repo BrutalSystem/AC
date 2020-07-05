@@ -549,7 +549,7 @@ void moveplayer(physent *pl, int moveres, bool local, int curtime)
                 if(timeinair > 200 && !pl->timeinair && pl->inwater == water)
                 {
                     int sound = timeinair > 800 ? S_HARDLAND : S_SOFTLAND;
-                    if(pl->state!=CS_DEAD)
+                    if(pl->state != CS_DEAD && pl->state != CS_SPECTATE)
                     {
                         if(pl==player1 || pl->type!=ENT_PLAYER) audiomgr.playsoundc(sound, pl);
                     }
@@ -744,7 +744,7 @@ void moveplayer(physent *pl, int moveres, bool local, int curtime)
     }
 
     // play sounds on water transitions
-    if(pl->type!=ENT_CAMERA)
+    if(pl->type != ENT_CAMERA && !(pl->type == ENT_PLAYER && (pl->state == CS_DEAD || pl->state == CS_SPECTATE) && ((playerent *)pl)->spectatemode != SM_FLY))
     {
         if(!pl->inwater && water)
         {
