@@ -825,7 +825,6 @@ void respawnself()
         spawnplayer(player1);
         player1->lifesequence++;
         player1->weaponswitch(player1->primweap);
-        player1->weaponchanging -= player1->weapons[player1->gunselect]->weaponchangetime/2; // 2011jan16:ft: for a little no-shoot after spawn
     }
 }
 
