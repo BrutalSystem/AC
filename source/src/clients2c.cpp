@@ -674,6 +674,7 @@ void parsemessages(int cn, playerent *d, ucharbuf &p, bool demo = false)
                 showscores(false);
                 setscope(false);
                 setburst(false);
+                if(player1->state == CS_SPECTATE && player1->spectatemode == SM_FLY) player1->followplayercn = -1;
                 player1->respawn();
                 player1->lifesequence = getint(p);
                 player1->health = getint(p);
