@@ -1670,13 +1670,19 @@ void cleanplayervotes(playerent *p)
 
 void whois(int *cn)
 {
-    loopv(players) if(players[i] && players[i]->type == ENT_PLAYER && (*cn == -1 || players[i]->clientnum == *cn))
+    if(*cn == player1->clientnum && player1->clientnum != -1)
+        conoutf("WHOIS client %d: %s , IP local , %d teamkill%s", player1->clientnum, colorname(player1), player1->tks, player1->tks == 1 ? "" : "s");
+    else loopv(players)
     {
-        playerent *p = players[i];
-        uint2ip(p->address, ip);
-        if(ip[3] != 0 || player1->clientrole==CR_ADMIN)
-            conoutf("WHOIS client %d:\tname %s , IP %d.%d.%d.%d , %d teamkill%s", p->clientnum, colorname(p), ip[0], ip[1], ip[2], ip[3], p->tks, p->tks == 1 ? "" : "s"); // full IP
-        else conoutf("WHOIS client %d:\tname %s , IP %d.%d.%d.x , %d teamkill%s", p->clientnum, colorname(p), ip[0], ip[1], ip[2], p->tks, p->tks == 1 ? "" : "s"); // censored IP
+        if(players[i] && players[i]->type == ENT_PLAYER && (*cn == -1 || players[i]->clientnum == *cn))
+        {
+            playerent *p = players[i];
+            uint2ip(p->address, ip);
+            if(ip[3] != 0 || player1->clientrole == CR_ADMIN)
+                conoutf("WHOIS client %d: %s , IP %d.%d.%d.%d , %d teamkill%s", p->clientnum, colorname(p), ip[0], ip[1], ip[2], ip[3], p->tks, p->tks == 1 ? "" : "s"); // full IP
+            else conoutf("WHOIS client %d: %s , IP %d.%d.%d.x , %d teamkill%s", p->clientnum, colorname(p), ip[0], ip[1], ip[2], p->tks, p->tks == 1 ? "" : "s"); // censored IP
+            if(*cn != -1) break;
+        }
     }
 }
 COMMAND(whois, "i");
