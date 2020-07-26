@@ -447,8 +447,11 @@ int docs_parsecmd(const char *p, const char *pos, const char *w[MAXWORDS], int w
     }
 }
 
+bool isdocvisible = false;
+
 void renderdoc(int x, int y, int doch)
 {
+    isdocvisible = false;
     if(!docvisible) return;
     doch -= 3*FONTH + FONTH/2;
 
@@ -638,6 +641,7 @@ void renderdoc(int x, int y, int doch)
     if(maxl < doclines.length()) draw_text("\f4more (F3)", x, y+doch); // footer
     if(offset > 0) draw_text("\f4less (F2)", x, y+doch+FONTH);
     draw_text("\f4disable doc reference (F1)", x, y+doch+2*FONTH);
+    isdocvisible = true;
 }
 
 void *docmenu = NULL;

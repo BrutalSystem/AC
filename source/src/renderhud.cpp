@@ -1168,7 +1168,9 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
     }
 
     drawscores();
-    if(!hidespecthud && spectating && player1->spectatemode!=SM_DEATHCAM)
+
+    extern bool isdocvisible;
+    if(!hidespecthud && spectating && player1->spectatemode!=SM_DEATHCAM && !isdocvisible)
     {
         glLoadIdentity();
         glOrtho(0, VIRTW, VIRTH, 0, -1, 1);
@@ -1183,6 +1185,7 @@ void gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwat
             draw_text(name, VIRTW/40, VIRTH/10*8);
         }
     }
+    isdocvisible = false;
 
     if(p->state == CS_ALIVE || (p->state == CS_DEAD && p->spectatemode == SM_DEATHCAM))
     {
