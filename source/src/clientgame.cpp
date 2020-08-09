@@ -1736,8 +1736,8 @@ void refreshsopmenu(void *menu, bool init)
     }
 }
 
-extern bool watchingdemo;
-VARP(spectatepersistent,0,1,1);
+bool stayondeadplayers = false;
+VARP(spectatepersistent, 0, 2, 2);
 
 // rotate through all spec-able players
 playerent *updatefollowplayer(int shiftdirection)
@@ -1746,7 +1746,7 @@ playerent *updatefollowplayer(int shiftdirection)
 
     // collect spec-able players
     int omit_team = m_teammode && !watchingdemo && player1->team != TEAM_SPECT ? team_opposite(team_base(player1->team)) : TEAM_NUM; // don't spect enemy team in team mode
-    bool stayondeadplayers = spectatepersistent || !m_arena;
+    stayondeadplayers = (spectatepersistent == 1 && !m_arena) || spectatepersistent == 2;
     vector<playerent *> available;
     loopv(players) if(players[i])
     {
@@ -1758,8 +1758,9 @@ playerent *updatefollowplayer(int shiftdirection)
 
     // rotate
     int oldidx = f ? available.find(f) : 0;
+    bool randomspectchange = !stayondeadplayers && !shiftdirection && oldidx < 0;
     if(oldidx < 0) oldidx = 0;
-    int idx = ((oldidx + shiftdirection) % available.length() + available.length()) % available.length();
+    int idx = !randomspectchange ? ((oldidx + shiftdirection) % available.length() + available.length()) % available.length() : rnd(available.length());
 
     player1->followplayercn = available[idx]->clientnum;
     return players[player1->followplayercn];
@@ -1794,7 +1795,6 @@ void spectatemode(int mode)
 {
     if((player1->state != CS_DEAD && player1->state != CS_SPECTATE && !team_isspect(player1->team)) || (!m_teammode && !team_isspect(player1->team) && servstate.mastermode == MM_MATCH)) return;  // during ffa matches only SPECTATORS can spectate
     if(mode == player1->spectatemode || (m_botmode && mode != SM_FLY)) return;
-    showscores(false);
     switch(mode)
     {
         case SM_DEATHCAM:

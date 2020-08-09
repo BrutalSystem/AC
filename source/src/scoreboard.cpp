@@ -273,8 +273,6 @@ void renderteamscore(teamscore *t)
     loopv(t->teammembers) renderscore(t->teammembers[i]);
 }
 
-extern bool watchingdemo;
-
 void reorderscorecolumns()
 {
     static string scoreboardtitle;

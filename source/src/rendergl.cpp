@@ -495,8 +495,12 @@ void resetcamera()
     camera1 = player1;
 }
 
+extern bool stayondeadplayers;
+int lastspectmode = SM_NONE;
+
 void recomputecamera()
 {
+    if(stayondeadplayers) lastspectmode = SM_NONE;
     if((player1->state==CS_SPECTATE || player1->state==CS_DEAD) && !editmode)
     {
         switch(player1->spectatemode)
@@ -517,6 +521,7 @@ void recomputecamera()
             case SM_FLY:
                 resetcamera();
                 camera1->eyeheight = 1.0f;
+                if(!stayondeadplayers && lastspectmode && updatefollowplayer()) spectatemode(lastspectmode);
                 break;
             case SM_OVERVIEW:
             {
@@ -533,7 +538,13 @@ void recomputecamera()
             case SM_FOLLOW1ST:
             {
                 playerent *f = updatefollowplayer();
-                if(!f) { togglespect(); return; }
+                if(!f)
+                {
+                    lastspectmode = player1->spectatemode;
+                    togglespect();
+                    return;
+                }
+                lastspectmode = SM_NONE;
                 camera1 = f;
                 break;
             }
@@ -541,7 +552,13 @@ void recomputecamera()
             case SM_FOLLOW3RD_TRANSPARENT:
             {
                 playerent *p = updatefollowplayer();
-                if(!p) { togglespect(); return; }
+                if(!p)
+                {
+                    lastspectmode = player1->spectatemode;
+                    togglespect();
+                    return;
+                }
+                lastspectmode = SM_NONE;
                 static physent followcam;
                 static playerent *lastplayer;
                 if(lastplayer != p || &followcam != camera1)

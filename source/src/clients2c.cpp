@@ -6,7 +6,6 @@
 VARP(networkdebug, 0, 0, 1);
 #define DEBUGCOND (networkdebug==1)
 
-extern bool watchingdemo;
 extern string clientpassword;
 
 void *downloaddemomenu = NULL;
