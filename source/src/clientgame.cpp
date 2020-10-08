@@ -1847,7 +1847,7 @@ COMMAND(togglespect, "");
 
 void changefollowplayer(int shift)
 {
-    if(!m_botmode) updatefollowplayer(shift);
+    if(!m_botmode && player1->isspectating() && player1->spectatemode >= SM_FOLLOW1ST && player1->spectatemode <= SM_FOLLOW3RD_TRANSPARENT) updatefollowplayer(shift);
 }
 
 COMMANDF(changefollowplayer, "i", (int *dir) { changefollowplayer(*dir); });
