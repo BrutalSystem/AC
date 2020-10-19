@@ -1751,7 +1751,7 @@ bool knife::attack(vec &targ)
     unitv.mul(3); // punch range
     to = from;
     to.add(unitv);
-    if ( owner->pitch < 0 ) to.z += 2.5 * sin( owner->pitch * 0.01745329 );
+    if(owner->pitch < 0) to.z += 2.5 * sinf(RAD*owner->pitch);
 
     attackevent(owner, type);
 

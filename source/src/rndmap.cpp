@@ -19,7 +19,7 @@ float smoothednoise(int x, int y, int seed)
 
 float interpolate(float a, float b, float x)
 {
-    float ft = x*3.1415927f;
+    float ft = PI*x;
     float f = (1.0f-cosf(ft))*0.5f;
     return a*(1-f)+b*f;
 }
