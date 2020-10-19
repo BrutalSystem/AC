@@ -790,9 +790,12 @@ void newmap(int *i)
     {
         addmsg(SV_NEWMAP, "ri", max(*i, 0));
         exechook(HOOK_SP_MP, "onNewMap", "");
+        //gametimecurrent = 0;
+        //gametimemaximum = 0;
     }
     defformatstring(startmillis)("%d", totalmillis);
     alias("gametimestart", startmillis, true);
+    // conoutf("%d %d", gametimecurrent+(lastmillis-lastgametimeupdate), gametimemaximum);
 }
 
 COMMAND(mapenlarge, "");

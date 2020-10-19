@@ -368,6 +368,7 @@ void renderscores(void *menu, bool init)
         formatstring(modeline)("\"%s\" on map %s", modestr(gamemode, modeacronyms > 0), fldrprefix ? getclientmap()+strlen("maps/") : getclientmap());
     }
 
+
     if(intermissionscores) intermissionscores = false;
     extern int minutesremaining, gametimedisplay;
     extern string gtime;

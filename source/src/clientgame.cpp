@@ -1061,7 +1061,7 @@ void timeupdate(int milliscur, int millismax)
     if(lastdisplay >= 0 && lastdisplay <= 1000) return; // avoid double-output
     lastgametimedisplay = lastmillis;
 
-    if(!minutesremaining)
+    if(!minutesremaining && !m_coop)
     {
         if(!intermission) intermissionscores = true;
         intermission = true;
