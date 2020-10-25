@@ -1622,13 +1622,21 @@ void writecfg()
     }
     if(sids.length())
     {
-        f->printf("\n// demo descriptions\n\n");
+        filerotate("config/demo_descriptions", "cfg", CONFIGROTATEMAX); // keep five old demo descriptions sets
+        stream *fd = openfile(path("config/demo_descriptions.cfg", true), "w");
+        stream *fdd = fd ? fd : f;
+        fdd->printf("\n// demo descriptions\n\n");
         loopv(sids)
         {
             ident &id = *sids[i];
             const char *action = id.action;
             for(identstack *s = id.stack; s; s = s->next) action = s->action;
-            if(action[0]) f->printf("alias %s %s\n", escapestring(id.name, false), escapestring(action, false));
+            if(action[0]) fdd->printf("alias %s %s\n", escapestring(id.name, false), escapestring(action, false));
+        }
+        if(fd)
+        {
+            fd->printf("\n");
+            delete fd;
         }
     }
     f->printf("\n");

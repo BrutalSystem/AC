@@ -1252,6 +1252,7 @@ int main(int argc, char **argv)
         exec("config/defaults.cfg");
         bootstrapentropy += 5 + rnd(7);
     }
+    execfile("config/demo_descriptions.cfg");
     autostartscripts("_aftersaved_");
     exechook(HOOK_SP_MP, "afterinit", "");
     autostartscripts("");    // all remaining scripts
