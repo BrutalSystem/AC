@@ -622,8 +622,6 @@ float skyfloor = 1e16f;
 
 void draw_envbox(int w)
 {
-    extern float skyfloor;
-
     float zclip = skyclip && skyfloor >= camera1->o.z ? 0.5f + float(skyfloor-camera1->o.z)/w : 0.0f,
           vclip = 1-zclip,
           z = 2*w*(vclip-0.5f);

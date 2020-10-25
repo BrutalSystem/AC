@@ -14,7 +14,6 @@
 #include "bot.h"
 
 extern int triggertime;
-extern itemstat itemstats[];
 extern void spawnstate(playerent *d);
 
 //AC Bot class begin

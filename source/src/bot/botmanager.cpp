@@ -13,8 +13,6 @@
 #include "cube.h"
 #include "bot.h"
 
-extern void respawnself();
-
 CBotManager BotManager;
 
 // Bot manager class begin

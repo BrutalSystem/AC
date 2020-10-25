@@ -1058,7 +1058,6 @@ struct vertmodel : model
             shadows = new GLuint[numframes];
             glGenTextures(numframes, shadows);
 
-            extern SDL_Surface *screen;
             int aasize = 1<<(dynshadowsize + aadynshadow);
             while(aasize > screen->w || aasize > screen->h) aasize /= 2;
 

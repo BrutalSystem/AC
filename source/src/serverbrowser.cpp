@@ -144,8 +144,6 @@ bool resolvercheck(const char **name, ENetAddress *address)
     return resolved;
 }
 
-extern bool isdedicated;
-
 bool resolverwait(const char *name, ENetAddress *address)
 {
     if(isdedicated) return enet_address_set_host(address, name) >= 0;

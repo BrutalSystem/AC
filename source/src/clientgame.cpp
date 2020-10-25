@@ -1200,8 +1200,7 @@ void resetmap(bool mrproper)
 int suicided = -1;
 extern bool good_map();
 extern bool item_fail;
-extern int MA, F2F, Ma, Hhits;
-extern float Mh;
+extern int F2F, Ma, Hhits;
 
 VARP(mapstats_hud, 0, 0, 1);
 
