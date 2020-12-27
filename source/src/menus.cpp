@@ -155,7 +155,7 @@ extern void *scoremenu;
 
 void rendermenu()
 {
-    if(curmenu != scoremenu) setscope(false);
+    if(curmenu != scoremenu && !curmenu->forwardkeys) setscope(false);
     gmenu &m = *curmenu;
     m.refresh();
     m.render();
@@ -1353,8 +1353,12 @@ bool menukey(int code, bool isdown, int unicode, SDLMod mod)
                 else menusel += pagesize;
                 break;
             case SDLK_ESCAPE:
-            case SDL_AC_BUTTON_RIGHT:
                 if(!curmenu->allowinput) return false;
+                menuset(menustack.empty() ? NULL : menustack.pop(), false);
+                return true;
+                break;
+            case SDL_AC_BUTTON_RIGHT:
+                if(!curmenu->allowinput || curmenu->forwardkeys) return false;
                 menuset(menustack.empty() ? NULL : menustack.pop(), false);
                 return true;
                 break;
@@ -1362,14 +1366,14 @@ bool menukey(int code, bool isdown, int unicode, SDLMod mod)
             case SDL_AC_BUTTON_WHEELUP:
                 if(iskeypressed(SDLK_LCTRL)) return menukey(SDLK_LEFT, isdown, 0);
                 if(iskeypressed(SDLK_LALT)) return menukey(SDLK_RIGHTBRACKET, isdown, 0);
-                if(!curmenu->allowinput) return false;
+                if(!curmenu->allowinput || curmenu->forwardkeys) return false;
                 menusel--;
                 break;
             case SDLK_DOWN:
             case SDL_AC_BUTTON_WHEELDOWN:
                 if(iskeypressed(SDLK_LCTRL)) return menukey(SDLK_RIGHT, isdown, 0);
                 if(iskeypressed(SDLK_LALT)) return menukey(SDLK_LEFTBRACKET, isdown, 0);
-                if(!curmenu->allowinput) return false;
+                if(!curmenu->allowinput || curmenu->forwardkeys) return false;
                 menusel++;
                 break;
             case SDLK_TAB:
