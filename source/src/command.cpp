@@ -522,7 +522,8 @@ char *executeret(const char *p)                 // all evaluation happens here, 
         {
             if(!isdigit(*c) && ((*c!='+' && *c!='-' && *c!='.') || !isdigit(c[1])))
             {
-                conoutf("unknown command: %s", c);
+                string cf;
+                conoutf("unknown command: %s", filtertext(cf, c, FTXT__CHAT));
                 scripterr();
                 flagmapconfigerror(LWW_SCRIPTERR * 4);
             }
