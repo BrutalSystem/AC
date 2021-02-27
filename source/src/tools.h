@@ -117,6 +117,7 @@ inline int iabs(int n) { return labs(n == INT_MIN ? INT_MAX : n); }
 typedef char string[MAXSTRLEN];
 
 inline void vformatstring(char *d, const char *fmt, va_list v, int len = MAXSTRLEN) { _vsnprintf(d, len, fmt, v); d[len-1] = 0; }
+//#pragma GCC diagnostic ignored "-Wstringop-truncation" // moved to makefile, because it doesn't work from precompiled header
 inline char *copystring(char *d, const char *s, size_t len = MAXSTRLEN) { strncpy(d, s, len); d[len-1] = 0; return d; }
 inline char *concatstring(char *d, const char *s, size_t len = MAXSTRLEN) { size_t used = strlen(d); return used < len ? copystring(d+used, s, len-used) : d; }
 extern char *concatformatstring(char *d, const char *s, ...) PRINTFARGS(2, 3);
@@ -824,7 +825,7 @@ struct stopwatch
 
 inline char *newstring(size_t l)                { return new char[l+1]; }
 inline char *newstring(const char *s, size_t l) { return copystring(newstring(l), s, l+1); }
-inline char *newstring(const char *s)           { return newstring(s, strlen(s)); }
+inline char *newstring(const char *s)           { size_t l = strlen(s); char *d = newstring(l); memcpy(d, s, l+1); return d; }
 inline char *newstringbuf()                     { return newstring(MAXSTRLEN-1); }
 inline char *newstringbuf(const char *s)        { return newstring(s, MAXSTRLEN-1); }
 inline void delstring(const char *s)            { delete[] (char *)s; }
