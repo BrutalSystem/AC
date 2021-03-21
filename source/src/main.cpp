@@ -871,7 +871,7 @@ void checkinput()
 
                     case SDL_WINDOWEVENT_MAXIMIZED: // window has been maximized
                     case SDL_WINDOWEVENT_RESTORED: // window has been restored to normal size and position
-                        EVENTDEBUG(concatstring(eb, event.window.event == SDL_WINDOWEVENT_RESTORED ? "SDL_WINDOWEVENT_RESTORED" : "SDL_WINDOWEVENT_MAXIMIZED"));
+                        EVENTDEBUG(concatstring(eb, event.window.event == SDL_WINDOWEVENT_RESTORED ? " SDL_WINDOWEVENT_RESTORED" : " SDL_WINDOWEVENT_MAXIMIZED"));
                         minimized = 0;
                         inputgrab(grabinput);
                         break;
@@ -892,6 +892,12 @@ void checkinput()
                     case SDL_WINDOWEVENT_FOCUS_LOST: // window has lost keyboard focus
                         EVENTDEBUG(concatstring(eb, " SDL_WINDOWEVENT_FOCUS_LOST"));
                         inputgrab(grabinput = false);
+                        break;
+
+                    case SDL_WINDOWEVENT_TAKE_FOCUS: // window has lost mouse focus
+                        EVENTDEBUG(concatstring(eb, " SDL_WINDOWEVENT_TAKE_FOCUS"));
+                        minimized = 0;
+                        inputgrab(grabinput = true);
                         break;
                 }
                 break;
